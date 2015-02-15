@@ -22,9 +22,16 @@ namespace fontio { namespace model { namespace cff
         {
         }
 
-        CffHeader(std::istream& stream)
+        CffHeader(
+            uint8_t versionMajor,
+            uint8_t versionMinor,
+            uint8_t headerSize,
+            uint8_t offsetSize)
+            : versionMajor(versionMajor)
+            , versionMinor(versionMinor)
+            , headerSize(headerSize)
+            , offsetSize(offsetSize)
         {
-            stream.read(reinterpret_cast<char*>(&this->versionMajor), 4);
         }
 
     public:
