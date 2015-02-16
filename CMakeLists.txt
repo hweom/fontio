@@ -22,9 +22,11 @@ file(GLOB LIBRARY_LIST
     src/${PROJECT_NAME}/logic/*.?pp
     src/${PROJECT_NAME}/logic/cff/*.?pp
     src/${PROJECT_NAME}/logic/otf/*.?pp
+    src/${PROJECT_NAME}/logic/type2/*.?pp
     src/${PROJECT_NAME}/model/*.?pp
     src/${PROJECT_NAME}/model/cff/*.?pp
     src/${PROJECT_NAME}/model/otf/*.?pp
+    src/${PROJECT_NAME}/model/type2/*.?pp
 )
 
 # Library

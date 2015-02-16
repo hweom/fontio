@@ -2,10 +2,13 @@
 
 #include <istream>
 
+#include <fontio/logic/type2/Type2CharstringReader.hpp>
 #include <fontio/model/cff/Cff.hpp>
+#include <fontio/model/cff/CffType2Charstring.hpp>
 
 namespace fontio { namespace logic { namespace cff
 {
+    using namespace fontio::logic::type2;
     using namespace fontio::model::cff;
 
     class CffReader
@@ -128,12 +131,42 @@ namespace fontio { namespace logic { namespace cff
 
             auto charstringsOffset = this->GetOffsetFromOperator(objects, CffOperatorType::CharStrings, false);
             auto charstringsIndex = this->ReadIndex(stream, charstringsOffset);
+            auto charstrings = this->ReadCharstrings(stream, charstringsIndex, this->GetCharstringFormat(objects));
 
             auto charset = charstringsIndex.GetOffsets().size() > 0
                 ? this->LoadCharset(objects, stream, charstringsIndex.GetOffsets().size() - 1)
                 : std::unique_ptr<CffCharset>();
 
-            return CffTopDict(std::move(objects), std::move(charset));
+            return CffTopDict(std::move(objects), std::move(charstrings), std::move(charset));
+        }
+
+        std::vector<std::unique_ptr<ICffCharstring>> ReadCharstrings(
+            std::istream& stream,
+            const CffIndex& index,
+            CffCharstringFormat format)
+        {
+            std::vector<std::unique_ptr<ICffCharstring>> charstrings;
+
+            for (size_t i = 0; i < index.GetOffsets().size() - 1; i++)
+            {
+                auto start = index.GetOffsets()[i];
+                auto end = index.GetOffsets()[i + 1];
+
+                stream.seekg(start, std::ios_base::beg);
+
+                if (format == CffCharstringFormat::Type2)
+                {
+                    Type2CharstringReader type2Reader;
+
+                    charstrings.emplace_back(new CffType2Charstring(type2Reader.ReadType2Charstring(stream, end - start)));
+                }
+                else
+                {
+                    throw std::logic_error("Not implemented");
+                }
+            }
+
+            return charstrings;
         }
 
         uint32_t GetOffsetFromOperator(
@@ -162,6 +195,24 @@ namespace fontio { namespace logic { namespace cff
             }
 
             return (uint32_t)numbers[0].GetIntegerSafe();
+        }
+
+        CffCharstringFormat GetCharstringFormat(const std::unordered_map<CffOperatorType, std::vector<CffObject>>& objects) const
+        {
+            auto pos = objects.find(CffOperatorType::CharstringType);
+            if (pos == objects.end())
+            {
+                return CffCharstringFormat::Type2;
+            }
+
+            auto& numbers = pos->second;
+
+            if (numbers.size() != 1)
+            {
+                throw std::runtime_error("Wrong format for charstring type: expected 1 number.");
+            }
+
+            return (CffCharstringFormat)numbers[0].GetIntegerSafe();
         }
 
         std::unique_ptr<CffCharset> LoadCharset(

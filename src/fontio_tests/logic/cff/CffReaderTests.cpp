@@ -75,12 +75,11 @@ namespace fontio { namespace logic { namespace cff
 
         ASSERT_EQ("Regular", cff.GetStringIndex().GetString(topDict.GetWeightSid()));
 
-/*
+
         for (auto& pair : topDict.GetOperators())
         {
             std::cout << pair.first << std::endl;
         }
-*/
     }
 
     TEST_F(CffReaderTests, CanReadCharset)

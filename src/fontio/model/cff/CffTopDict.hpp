@@ -10,6 +10,7 @@
 #include <fontio/model/cff/CffFontMatrix.hpp>
 #include <fontio/model/cff/CffOperatorType.hpp>
 #include <fontio/model/cff/CffObject.hpp>
+#include <fontio/model/cff/ICffCharstring.hpp>
 
 namespace fontio { namespace model { namespace cff
 {
@@ -21,14 +22,18 @@ namespace fontio { namespace model { namespace cff
 
         std::unordered_map<CffOperatorType, std::vector<CffObject>> objects;
 
+        std::vector<std::unique_ptr<ICffCharstring>> charstrings;
+
         std::unique_ptr<CffCharset> charset;
 
     public:
 
         CffTopDict(
             std::unordered_map<CffOperatorType, std::vector<CffObject>>&& objects,
+            std::vector<std::unique_ptr<ICffCharstring>>&& charstrings,
             std::unique_ptr<CffCharset>&& charset)
             : objects(std::move(objects))
+            , charstrings(std::move(charstrings))
             , charset(std::move(charset))
         {
         }
@@ -121,6 +126,24 @@ namespace fontio { namespace model { namespace cff
 
                 return (CffCharsetType)pos->second[0].GetIntegerSafe();
             }
+        }
+
+        CffCharstringFormat GetCharstringFormat() const
+        {
+            auto pos = this->objects.find(CffOperatorType::CharstringType);
+            if (pos == this->objects.end())
+            {
+                return CffCharstringFormat::Type2;
+            }
+
+            auto& numbers = pos->second;
+
+            if (numbers.size() != 1)
+            {
+                throw std::runtime_error("Wrong format for charstring type: expected 1 number.");
+            }
+
+            return (CffCharstringFormat)numbers[0].GetIntegerSafe();
         }
 
         const CffCharset& GetCharset() const
