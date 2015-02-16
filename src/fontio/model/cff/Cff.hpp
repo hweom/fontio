@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fontio/model/cff/CffCharset.hpp>
 #include <fontio/model/cff/CffHeader.hpp>
 #include <fontio/model/cff/CffNameIndex.hpp>
 #include <fontio/model/cff/CffStringIndex.hpp>

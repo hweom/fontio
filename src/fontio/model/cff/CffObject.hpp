@@ -75,6 +75,18 @@ namespace fontio { namespace model { namespace cff
             return this->operatorType;
         }
 
+        int64_t GetIntegerSafe() const
+        {
+            if (this->type == Integer)
+            {
+                return this->integerValue;
+            }
+            else
+            {
+                throw std::runtime_error("Not an integer");
+            }
+        }
+
         double GetRealSafe() const
         {
             if (this->type == Integer)

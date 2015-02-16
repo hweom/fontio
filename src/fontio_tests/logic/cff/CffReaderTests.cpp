@@ -70,13 +70,33 @@ namespace fontio { namespace logic { namespace cff
         auto& topDict = cff.GetTopDicts()[0];
 
         this->AssertFontMatrixEqual(CffFontMatrix(0.001, 0.0, 0.0, 0.001, 0.0, 0.0), topDict.GetFontMatrix());
+
         this->AssertFontBBoxEqual(CffBoundBox(-1199, -1241, 1194, 1061), topDict.GetBoundBox());
 
         ASSERT_EQ("Regular", cff.GetStringIndex().GetString(topDict.GetWeightSid()));
 
+/*
         for (auto& pair : topDict.GetOperators())
         {
             std::cout << pair.first << std::endl;
         }
+*/
+    }
+
+    TEST_F(CffReaderTests, CanReadCharset)
+    {
+        auto cff = this->ReadFile("test_data/cff/bare.cff");
+
+        auto& strings = cff.GetStringIndex();
+        auto& topDict = cff.GetTopDicts()[0];
+
+        ASSERT_EQ(CffCharsetType::Custom, topDict.GetCharsetType());
+
+        auto& charset = topDict.GetCharset();
+
+        ASSERT_EQ(".notdef", strings.GetString(charset[0]));
+        ASSERT_EQ("zero", strings.GetString(charset[17]));
+        ASSERT_EQ("bracketright", strings.GetString(charset[62]));
+        ASSERT_EQ("sterling", strings.GetString(charset[98]));
     }
 } } }

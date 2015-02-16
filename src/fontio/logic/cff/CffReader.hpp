@@ -16,19 +16,13 @@ namespace fontio { namespace logic { namespace cff
         {
             auto header = this->ReadHeader(stream);
 
-            stream.seekg(header.GetHeaderSize(), std::ios_base::beg);
-
-            auto nameIndex = this->ReadIndex(stream);
+            auto nameIndex = this->ReadIndex(stream, header.GetHeaderSize());
             auto names = this->ReadNameIndex(stream, nameIndex);
 
-            stream.seekg(nameIndex.GetOffsets().back());
-
-            auto topDictIndex = this->ReadIndex(stream);
+            auto topDictIndex = this->ReadIndex(stream, nameIndex.GetOffsets().back());
             auto topDicts = this->ReadTopDicts(stream, topDictIndex);
 
-            stream.seekg(topDictIndex.GetOffsets().back());
-
-            auto stringIndex = this->ReadIndex(stream);
+            auto stringIndex = this->ReadIndex(stream, topDictIndex.GetOffsets().back());
             auto strings = this->ReadStringIndex(stream, stringIndex);
 
             return Cff(header, names, std::move(topDicts), strings);
@@ -46,8 +40,10 @@ namespace fontio { namespace logic { namespace cff
             return CffHeader(versionMajor, versionMinor, headerSize, offsetSize);
         }
 
-        CffIndex ReadIndex(std::istream& stream)
+        CffIndex ReadIndex(std::istream& stream, size_t offset)
         {
+            stream.seekg(offset, std::ios_base::beg);
+
             auto count = this->ReadBigEndian<uint16_t>(stream);
             auto offsetSize = this->ReadBigEndian<uint8_t>(stream);
 
@@ -121,7 +117,7 @@ namespace fontio { namespace logic { namespace cff
 
                 if (object.IsOperator())
                 {
-                    objects[object.GetOperator()] = std::move(operands);
+                    objects[object.GetOperator()] = operands;
                     operands.clear();
                 }
                 else
@@ -130,7 +126,95 @@ namespace fontio { namespace logic { namespace cff
                 }
             }
 
-            return CffTopDict(std::move(objects));
+            auto charstringsOffset = this->GetOffsetFromOperator(objects, CffOperatorType::CharStrings, false);
+            auto charstringsIndex = this->ReadIndex(stream, charstringsOffset);
+
+            auto charset = charstringsIndex.GetOffsets().size() > 0
+                ? this->LoadCharset(objects, stream, charstringsIndex.GetOffsets().size() - 1)
+                : std::unique_ptr<CffCharset>();
+
+            return CffTopDict(std::move(objects), std::move(charset));
+        }
+
+        uint32_t GetOffsetFromOperator(
+            const std::unordered_map<CffOperatorType, std::vector<CffObject>>& objects,
+            CffOperatorType op,
+            bool canDefaultToZero) const
+        {
+            auto pos = objects.find(op);
+            if (pos == objects.end())
+            {
+                if (canDefaultToZero)
+                {
+                    return 0;
+                }
+                else
+                {
+                    throw std::runtime_error("Missing value for operator");
+                }
+            }
+
+            auto& numbers = pos->second;
+
+            if (numbers.size() != 1)
+            {
+                throw std::runtime_error("Wrong format for offset operator: expected 1 integer.");
+            }
+
+            return (uint32_t)numbers[0].GetIntegerSafe();
+        }
+
+        std::unique_ptr<CffCharset> LoadCharset(
+            const std::unordered_map<CffOperatorType, std::vector<CffObject>>& objects,
+            std::istream& stream,
+            size_t totalGlyphs)
+        {
+            auto charsetOffset = this->GetOffsetFromOperator(objects, CffOperatorType::Charset, true);
+            if (charsetOffset > 3)
+            {
+                stream.seekg(charsetOffset, std::ios_base::beg);
+                return this->LoadCharsetTable(stream, totalGlyphs);
+            }
+
+            return std::unique_ptr<CffCharset>();
+        }
+
+        std::unique_ptr<CffCharset> LoadCharsetTable(std::istream& stream, size_t totalGlyphs)
+        {
+            std::unordered_map<uint16_t, uint16_t> gidToSid;
+
+            gidToSid[0] = 0;
+
+            auto format = this->ReadBigEndian<uint8_t>(stream);
+
+            if (format == 0)
+            {
+                throw std::logic_error("Not implemented");
+            }
+            else if (format == 1)
+            {
+                size_t gid = 1;
+                while (gid < totalGlyphs)
+                {
+                    auto sid = this->ReadBigEndian<uint16_t>(stream);
+                    auto rangeLen = this->ReadBigEndian<uint8_t>(stream);
+
+                    for (size_t i = 0; i < rangeLen; i++)
+                    {
+                        gidToSid[gid++] = sid++;
+                    }
+                }
+            }
+            else if (format == 2)
+            {
+                throw std::logic_error("Not implemented");
+            }
+            else
+            {
+                throw std::runtime_error("Unknown charset format");
+            }
+
+            return std::unique_ptr<CffCharset>(new CffCharset(gidToSid));
         }
 
         CffStringIndex ReadStringIndex(std::istream& stream, const CffIndex& index)

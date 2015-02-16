@@ -5,6 +5,8 @@
 #include <vector>
 
 #include <fontio/model/cff/CffBoundBox.hpp>
+#include <fontio/model/cff/CffCharset.hpp>
+#include <fontio/model/cff/CffCharsetType.hpp>
 #include <fontio/model/cff/CffFontMatrix.hpp>
 #include <fontio/model/cff/CffOperatorType.hpp>
 #include <fontio/model/cff/CffObject.hpp>
@@ -19,10 +21,15 @@ namespace fontio { namespace model { namespace cff
 
         std::unordered_map<CffOperatorType, std::vector<CffObject>> objects;
 
+        std::unique_ptr<CffCharset> charset;
+
     public:
 
-        CffTopDict(std::unordered_map<CffOperatorType, std::vector<CffObject>>&& objects)
+        CffTopDict(
+            std::unordered_map<CffOperatorType, std::vector<CffObject>>&& objects,
+            std::unique_ptr<CffCharset>&& charset)
             : objects(std::move(objects))
+            , charset(std::move(charset))
         {
         }
 
@@ -96,6 +103,31 @@ namespace fontio { namespace model { namespace cff
             }
 
             return numbers[0].GetSidSafe();
+        }
+
+        CffCharsetType GetCharsetType() const
+        {
+            if (this->charset != nullptr)
+            {
+                return CffCharsetType::Custom;
+            }
+            else
+            {
+                auto pos = this->objects.find(CffOperatorType::Charset);
+                if (pos == this->objects.end())
+                {
+                    return CffCharsetType::ISOAdobe;
+                }
+
+                return (CffCharsetType)pos->second[0].GetIntegerSafe();
+            }
+        }
+
+        const CffCharset& GetCharset() const
+        {
+            assert (this->charset != nullptr);
+
+            return *this->charset;
         }
 
         bool HasOperator(CffOperatorType type) const
