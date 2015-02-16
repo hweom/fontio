@@ -31,5 +31,10 @@ namespace fontio { namespace model { namespace cff
 
             return pos->second;
         }
+
+        const std::unordered_map<uint16_t, uint16_t>& GetGidToSidMap() const
+        {
+            return this->gidToSid;
+        }
     };
 } } }

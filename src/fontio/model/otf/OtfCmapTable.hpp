@@ -1,9 +1,8 @@
 #pragma once
 
-#include <memory>
+#include <cinttypes>
 #include <vector>
-
-#include <fontio/model/otf/OtfEncodingSubtable.hpp>
+#include <utility>
 
 namespace fontio { namespace model { namespace otf
 {
@@ -11,6 +10,20 @@ namespace fontio { namespace model { namespace otf
     {
     private:
 
-        std::vector<std::unique_ptr<OtfEncodingSubtable>> subtables;
+        /// <gid:code> pairs.
+        /// code is typically Unicode.
+        std::vector<std::pair<uint16_t, uint16_t>> cmap;
+
+    public:
+
+        OtfCmapTable()
+        {
+        }
+
+        OtfCmapTable(const std::vector<std::pair<uint16_t, uint16_t>>& cmap)
+            : cmap(cmap)
+        {
+        }
+
     };
 } } }

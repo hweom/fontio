@@ -1,10 +1,12 @@
 #pragma once
 
+#include <fontio/model/AdobeGlyphList.hpp>
 #include <fontio/model/cff/Cff.hpp>
 #include <fontio/model/otf/Otf.hpp>
 
 namespace fontio { namespace logic { namespace otf
 {
+    using namespace fontio::model;
     using namespace fontio::model::cff;
     using namespace fontio::model::otf;
 
@@ -14,13 +16,36 @@ namespace fontio { namespace logic { namespace otf
 
         std::unique_ptr<Otf> ConvertFromCff(const Cff& cff, size_t fontIndex = 0)
         {
-            auto headTable = this->ConvertHeadTable(cff);
+            auto& topDict = cff.GetTopDicts()[fontIndex];
+
+            auto cmapTable = this->ConvertCmapTable(cff, topDict);
+            auto headTable = this->ConvertHeadTable(topDict);
         }
 
     private:
 
-        std::unique_ptr<OtfCmapTable> ConvertCmapTable(const CffTopDict& topDict)
+        std::unique_ptr<OtfCmapTable> ConvertCmapTable(const Cff& cff, const CffTopDict& topDict)
         {
+            if (topDict.GetCharsetType() == CffCharsetType::Custom)
+            {
+                AdobeGlyphList glyphList;
+                auto& strings = cff.GetStringIndex();
+
+                std::vector<std::pair<uint16_t, uint16_t>> cmap;
+                for (auto& pair : topDict.GetCharset().GetGidToSidMap())
+                {
+                    auto charName = strings.GetString(pair.second);
+                    auto unicode = glyphList.GetUnicode(charName);
+
+                    cmap.push_back(std::make_pair(pair.first, unicode));
+                }
+
+                return std::unique_ptr<OtfCmapTable>(new OtfCmapTable(cmap));
+            }
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
         }
 
         std::unique_ptr<OtfHeadTable> ConvertHeadTable(const CffTopDict& topDict)
