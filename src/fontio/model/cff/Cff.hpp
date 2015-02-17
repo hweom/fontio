@@ -20,17 +20,21 @@ namespace fontio { namespace model { namespace cff
 
         CffStringIndex stringIndex;
 
+        std::unique_ptr<ICffCharstrings> globalSubroutines;
+
     public:
 
         Cff(
             const CffHeader& header,
             const CffNameIndex& nameIndex,
             std::vector<CffTopDict>&& topDicts,
-            const CffStringIndex stringIndex)
+            const CffStringIndex stringIndex,
+            std::unique_ptr<ICffCharstrings>&& globalSubroutines)
             : header(header)
             , nameIndex(nameIndex)
             , topDicts(std::move(topDicts))
             , stringIndex(stringIndex)
+            , globalSubroutines(std::move(globalSubroutines))
         {
         }
 

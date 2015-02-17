@@ -4,13 +4,13 @@
 #include <unordered_map>
 #include <vector>
 
-#include <fontio/model/cff/CffBoundBox.hpp>
+#include <fontio/model/BoundBox.hpp>
 #include <fontio/model/cff/CffCharset.hpp>
 #include <fontio/model/cff/CffCharsetType.hpp>
 #include <fontio/model/cff/CffFontMatrix.hpp>
 #include <fontio/model/cff/CffOperatorType.hpp>
 #include <fontio/model/cff/CffObject.hpp>
-#include <fontio/model/cff/ICffCharstring.hpp>
+#include <fontio/model/cff/ICffCharstrings.hpp>
 
 namespace fontio { namespace model { namespace cff
 {
@@ -22,19 +22,23 @@ namespace fontio { namespace model { namespace cff
 
         std::unordered_map<CffOperatorType, std::vector<CffObject>> objects;
 
-        std::vector<std::unique_ptr<ICffCharstring>> charstrings;
+        std::unique_ptr<ICffCharstrings> charstrings;
 
         std::unique_ptr<CffCharset> charset;
+
+        std::unique_ptr<ICffCharstrings> localSubroutines;
 
     public:
 
         CffTopDict(
             std::unordered_map<CffOperatorType, std::vector<CffObject>>&& objects,
-            std::vector<std::unique_ptr<ICffCharstring>>&& charstrings,
-            std::unique_ptr<CffCharset>&& charset)
+            std::unique_ptr<ICffCharstrings>&& charstrings,
+            std::unique_ptr<CffCharset>&& charset,
+            std::unique_ptr<ICffCharstrings>&& localSubroutines)
             : objects(std::move(objects))
             , charstrings(std::move(charstrings))
             , charset(std::move(charset))
+            , localSubroutines(std::move(localSubroutines))
         {
         }
 
@@ -67,7 +71,7 @@ namespace fontio { namespace model { namespace cff
             }
         }
 
-        CffBoundBox GetBoundBox() const
+        BoundBox GetBoundBox() const
         {
             auto pos = this->objects.find(CffOperatorType::FontBBox);
 
@@ -80,15 +84,15 @@ namespace fontio { namespace model { namespace cff
                     throw std::runtime_error("Wrong format for font bbox: expected 4 numbers.");
                 }
 
-                return CffBoundBox(
-                    numbers[0].GetRealSafe(),
-                    numbers[1].GetRealSafe(),
-                    numbers[2].GetRealSafe(),
-                    numbers[3].GetRealSafe());
+                return BoundBox(
+                    static_cast<int32_t>(numbers[0].GetRealSafe()),
+                    static_cast<int32_t>(numbers[1].GetRealSafe()),
+                    static_cast<int32_t>(numbers[2].GetRealSafe()),
+                    static_cast<int32_t>(numbers[3].GetRealSafe()));
             }
             else
             {
-                return CffBoundBox(0.0, 0.0, 0.0, 0.0);
+                return BoundBox(0, 0, 0, 0);
             }
         }
 
@@ -144,6 +148,13 @@ namespace fontio { namespace model { namespace cff
             }
 
             return (CffCharstringFormat)numbers[0].GetIntegerSafe();
+        }
+
+        const ICffCharstrings& GetCharstrings() const
+        {
+            assert (this->charstrings != nullptr);
+
+            return *this->charstrings;
         }
 
         const CffCharset& GetCharset() const

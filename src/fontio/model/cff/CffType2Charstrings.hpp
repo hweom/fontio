@@ -2,23 +2,23 @@
 
 #include <vector>
 
-#include <fontio/model/cff/ICffCharstring.hpp>
-#include <fontio/model/type2/Type2Object.hpp>
+#include <fontio/model/cff/ICffCharstrings.hpp>
+#include <fontio/model/type2/Type2Charstring.hpp>
 
 namespace fontio { namespace model { namespace cff
 {
     using namespace fontio::model::type2;
 
-    class CffType2Charstring : public ICffCharstring
+    class CffType2Charstrings : public ICffCharstrings
     {
     private:
 
-        std::vector<Type2Object> objects;
+        std::vector<Type2Charstring> charstrings;
 
     public:
 
-        CffType2Charstring(std::vector<Type2Object>&& objects)
-            : objects(std::move(objects))
+        CffType2Charstrings(std::vector<Type2Charstring>&& charstrings)
+            : charstrings(std::move(charstrings))
         {
         }
 

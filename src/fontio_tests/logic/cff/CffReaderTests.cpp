@@ -6,6 +6,7 @@
 
 namespace fontio { namespace logic { namespace cff
 {
+    using namespace fontio::model;
     using namespace fontio::model::cff;
 
     class CffReaderTests : public testing::Test
@@ -33,12 +34,12 @@ namespace fontio { namespace logic { namespace cff
             ASSERT_FLOAT_EQ(expect.GetData()[2][1], matrix.GetData()[2][1]);
         }
 
-        void AssertFontBBoxEqual(const CffBoundBox& expect, const CffBoundBox& box) const
+        void AssertFontBBoxEqual(const BoundBox& expect, const BoundBox& box) const
         {
-            ASSERT_FLOAT_EQ(expect.GetX0(), box.GetX0());
-            ASSERT_FLOAT_EQ(expect.GetY0(), box.GetY0());
-            ASSERT_FLOAT_EQ(expect.GetX1(), box.GetX1());
-            ASSERT_FLOAT_EQ(expect.GetY1(), box.GetY1());
+            ASSERT_EQ(expect.GetX0(), box.GetX0());
+            ASSERT_EQ(expect.GetY0(), box.GetY0());
+            ASSERT_EQ(expect.GetX1(), box.GetX1());
+            ASSERT_EQ(expect.GetY1(), box.GetY1());
         }
 
     };
@@ -71,7 +72,7 @@ namespace fontio { namespace logic { namespace cff
 
         this->AssertFontMatrixEqual(CffFontMatrix(0.001, 0.0, 0.0, 0.001, 0.0, 0.0), topDict.GetFontMatrix());
 
-        this->AssertFontBBoxEqual(CffBoundBox(-1199, -1241, 1194, 1061), topDict.GetBoundBox());
+        this->AssertFontBBoxEqual(BoundBox(-1199, -1241, 1194, 1061), topDict.GetBoundBox());
 
         ASSERT_EQ("Regular", cff.GetStringIndex().GetString(topDict.GetWeightSid()));
 

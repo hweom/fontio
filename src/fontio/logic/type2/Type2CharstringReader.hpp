@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 
-#include <fontio/model/type2/Type2Object.hpp>
+#include <fontio/model/type2/Type2Charstring.hpp>
 
 namespace fontio { namespace logic { namespace type2
 {
@@ -11,35 +11,87 @@ namespace fontio { namespace logic { namespace type2
 
     class Type2CharstringReader
     {
+    private:
+
+        int hintCount = 0;
+
     public:
 
-        std::vector<Type2Object> ReadType2Charstring(std::istream& stream, uint32_t length)
+        Type2Charstring ReadType2Charstring(std::istream& stream, uint32_t length)
         {
             std::vector<Type2Object> objects;
+
+            this->Reset();
 
             auto start = (uint32_t)stream.tellg();
             while (((uint32_t)stream.tellg() - start) < length)
             {
-                objects.push_back(this->ReadObject(stream));
+                auto object = this->ReadObject(stream);
+
+                if (object.IsOperator() &&
+                    ((object.GetOperator() == Type2OperatorType::HintMask) ||
+                     (object.GetOperator() == Type2OperatorType::CntrMask)))
+                {
+                    this->ReadMask(stream, objects, object.GetArgCount());
+                }
+
+                objects.push_back(object);
             }
 
-            return objects;
+            return Type2Charstring(std::move(objects));
         }
 
     private:
+
+        void Reset()
+        {
+            this->hintCount = 0;
+        }
+
+        void ReadMask(std::istream& stream, std::vector<Type2Object>& objects, uint16_t bitCount)
+        {
+            uint32_t word = 0;
+            int byteIndex = 0;
+
+            for (uint16_t i = 0; i < bitCount; i += 8)
+            {
+                auto byte = (uint8_t)stream.get();
+
+                word = word | ((uint32_t)byte << (3 - byteIndex) * 8);
+
+                if (byteIndex == 3)
+                {
+                    objects.push_back(Type2Object(word));
+                    word = 0;
+                    byteIndex = 0;
+                }
+                else
+                {
+                    byteIndex++;
+                }
+            }
+
+            if (byteIndex > 0)
+            {
+                objects.push_back(Type2Object(word));
+            }
+        }
 
         Type2Object ReadObject(std::istream& stream)
         {
             auto b0 = (uint8_t)stream.get();
 
-            if ((b0 < 12) ||
-                ((b0 > 12) && (b0 < 28)) ||
-                ((b0 > 28) && (b0 < 32)))
+            if (this->IsMaskOperator(b0))
+            {
+                auto operatorType = (Type2OperatorType)b0;
+                return Type2Object(operatorType, this->hintCount);
+            }
+            else if (this->IsOneByteOperator(b0))
             {
                 auto operatorType = (Type2OperatorType)b0;
                 return Type2Object(operatorType);
             }
-            else if (b0 == 12)
+            else if (this->IsTwoByteOperator(b0))
             {
                 auto b1 = (uint8_t)stream.get();
                 auto operatorType = (Type2OperatorType)(((uint16_t)b0 << 8) | b1);
@@ -86,6 +138,26 @@ namespace fontio { namespace logic { namespace type2
             {
                 throw std::runtime_error("Unknown value format");
             }
+        }
+
+        bool IsMaskOperator(uint8_t byte)
+        {
+            return
+                ((uint16_t)byte == (uint16_t)Type2OperatorType::HintMask) ||
+                ((uint16_t)byte == (uint16_t)Type2OperatorType::CntrMask);
+        }
+
+        bool IsTwoByteOperator(uint8_t byte)
+        {
+            return byte == 12;
+        }
+
+        bool IsOneByteOperator(uint8_t byte)
+        {
+            return
+                (byte < 12) ||
+                (byte > 12) && (byte < 28) ||
+                (byte > 28) && (byte < 32);
         }
     };
 } } }

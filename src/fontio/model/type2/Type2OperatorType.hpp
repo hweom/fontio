@@ -1,11 +1,12 @@
 #pragma once
 
+#include <cinttypes>
 #include <ostream>
 #include <functional>
 
 namespace fontio { namespace model { namespace type2
 {
-    enum class Type2OperatorType
+    enum class Type2OperatorType : uint16_t
     {
         HStem = 0x0001,
         VStem = 0x0003,

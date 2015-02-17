@@ -4,7 +4,7 @@
 
 #include <fontio/logic/type2/Type2CharstringReader.hpp>
 #include <fontio/model/cff/Cff.hpp>
-#include <fontio/model/cff/CffType2Charstring.hpp>
+#include <fontio/model/cff/CffType2Charstrings.hpp>
 
 namespace fontio { namespace logic { namespace cff
 {
@@ -28,7 +28,10 @@ namespace fontio { namespace logic { namespace cff
             auto stringIndex = this->ReadIndex(stream, topDictIndex.GetOffsets().back());
             auto strings = this->ReadStringIndex(stream, stringIndex);
 
-            return Cff(header, names, std::move(topDicts), strings);
+            auto globalSubroutineIndex = this->ReadIndex(stream, stringIndex.GetOffsets().back());
+            auto globalSubroutines = this->ReadGlobalSubroutines(stream, globalSubroutineIndex);
+
+            return Cff(header, names, std::move(topDicts), strings, std::move(globalSubroutines));
         }
 
     private:
@@ -133,40 +136,43 @@ namespace fontio { namespace logic { namespace cff
             auto charstringsIndex = this->ReadIndex(stream, charstringsOffset);
             auto charstrings = this->ReadCharstrings(stream, charstringsIndex, this->GetCharstringFormat(objects));
 
+            auto localSubroutineIndex = this->ReadIndex(stream, /* FIXME !!! */0);
+            auto localSubroutines = this->ReadGlobalSubroutines(stream, localSubroutineIndex);
+
             auto charset = charstringsIndex.GetOffsets().size() > 0
                 ? this->LoadCharset(objects, stream, charstringsIndex.GetOffsets().size() - 1)
                 : std::unique_ptr<CffCharset>();
 
-            return CffTopDict(std::move(objects), std::move(charstrings), std::move(charset));
+            return CffTopDict(std::move(objects), std::move(charstrings), std::move(charset), std::move(localSubroutines));
         }
 
-        std::vector<std::unique_ptr<ICffCharstring>> ReadCharstrings(
+        std::unique_ptr<ICffCharstrings> ReadCharstrings(
             std::istream& stream,
             const CffIndex& index,
             CffCharstringFormat format)
         {
-            std::vector<std::unique_ptr<ICffCharstring>> charstrings;
-
-            for (size_t i = 0; i < index.GetOffsets().size() - 1; i++)
+            if (format == CffCharstringFormat::Type2)
             {
-                auto start = index.GetOffsets()[i];
-                auto end = index.GetOffsets()[i + 1];
+                Type2CharstringReader type2Reader;
 
-                stream.seekg(start, std::ios_base::beg);
+                std::vector<Type2Charstring> charstrings;
 
-                if (format == CffCharstringFormat::Type2)
+                for (size_t i = 0; i < index.GetOffsets().size() - 1; i++)
                 {
-                    Type2CharstringReader type2Reader;
+                    auto start = index.GetOffsets()[i];
+                    auto end = index.GetOffsets()[i + 1];
 
-                    charstrings.emplace_back(new CffType2Charstring(type2Reader.ReadType2Charstring(stream, end - start)));
+                    stream.seekg(start, std::ios_base::beg);
+
+                    charstrings.emplace_back(type2Reader.ReadType2Charstring(stream, end - start));
                 }
-                else
-                {
-                    throw std::logic_error("Not implemented");
-                }
+
+                return std::unique_ptr<ICffCharstrings>(new CffType2Charstrings(std::move(charstrings)));
             }
-
-            return charstrings;
+            else
+            {
+                throw std::logic_error("Not implemented");
+            }
         }
 
         uint32_t GetOffsetFromOperator(
@@ -287,6 +293,11 @@ namespace fontio { namespace logic { namespace cff
             }
 
             return CffStringIndex(strings);
+        }
+
+        std::unique_ptr<ICffCharstrings> ReadGlobalSubroutines(std::istream& stream, const CffIndex& index)
+        {
+            throw std::logic_error("Not implemented");
         }
 
         CffObject ReadObject(std::istream& stream)

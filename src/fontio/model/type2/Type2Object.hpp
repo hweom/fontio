@@ -23,16 +23,25 @@ namespace fontio { namespace model { namespace type2
 
         union
         {
-            Type2OperatorType operatorType;
+            struct
+            {
+                /// Operator type if object is an operator.
+                Type2OperatorType operatorType;
 
+                /// Number of bits if object is mask operator (hintmask or cntrmask).
+                uint16_t argCount;
+            };
+
+            /// Integer value if object is an operand.
             int32_t integerValue;
         };
 
     public:
 
-        Type2Object(Type2OperatorType operatorType)
+        Type2Object(Type2OperatorType operatorType, uint16_t argCount = 0)
             : type(Operator)
             , operatorType(operatorType)
+            , argCount(argCount)
         {
         }
 
@@ -44,7 +53,7 @@ namespace fontio { namespace model { namespace type2
 
         Type2Object(uint32_t integerValue)
             : type(Integer)
-            , integerValue(integerValue)
+            , integerValue((int32_t)integerValue)
         {
         }
 
@@ -65,6 +74,13 @@ namespace fontio { namespace model { namespace type2
             assert (this->type == Operator);
 
             return this->operatorType;
+        }
+
+        uint16_t GetArgCount() const
+        {
+            assert (this->type == Operator);
+
+            return this->argCount;
         }
 
         int64_t GetIntegerSafe() const

@@ -4,11 +4,11 @@
 
 namespace fontio { namespace model { namespace cff
 {
-    class ICffCharstring
+    class ICffCharstrings
     {
     public:
 
-        virtual ~ICffCharstring()
+        virtual ~ICffCharstrings()
         {
         }
 
