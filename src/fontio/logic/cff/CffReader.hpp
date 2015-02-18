@@ -4,11 +4,14 @@
 
 #include <fontio/logic/type2/Type2CharstringReader.hpp>
 #include <fontio/model/cff/Cff.hpp>
+#include <fontio/model/cff/CffDict.hpp>
+#include <fontio/model/cff/CffPrivateDict.hpp>
 #include <fontio/model/cff/CffType2Charstrings.hpp>
 
 namespace fontio { namespace logic { namespace cff
 {
     using namespace fontio::logic::type2;
+    using namespace fontio::model;
     using namespace fontio::model::cff;
 
     class CffReader
@@ -23,13 +26,18 @@ namespace fontio { namespace logic { namespace cff
             auto names = this->ReadNameIndex(stream, nameIndex);
 
             auto topDictIndex = this->ReadIndex(stream, nameIndex.GetOffsets().back());
-            auto topDicts = this->ReadTopDicts(stream, topDictIndex);
 
             auto stringIndex = this->ReadIndex(stream, topDictIndex.GetOffsets().back());
             auto strings = this->ReadStringIndex(stream, stringIndex);
 
+            auto topDicts = this->ReadTopDicts(stream, topDictIndex, strings);
+
+            std::unique_ptr<ICffCharstrings> globalSubroutines;
             auto globalSubroutineIndex = this->ReadIndex(stream, stringIndex.GetOffsets().back());
-            auto globalSubroutines = this->ReadGlobalSubroutines(stream, globalSubroutineIndex);
+            if (!globalSubroutineIndex.IsEmpty())
+            {
+                globalSubroutines = this->ReadCharstrings(stream, globalSubroutineIndex, CffCharstringFormat::Type2);
+            }
 
             return Cff(header, names, std::move(topDicts), strings, std::move(globalSubroutines));
         }
@@ -51,12 +59,13 @@ namespace fontio { namespace logic { namespace cff
             stream.seekg(offset, std::ios_base::beg);
 
             auto count = this->ReadBigEndian<uint16_t>(stream);
-            auto offsetSize = this->ReadBigEndian<uint8_t>(stream);
 
             if (count == 0)
             {
-                throw std::runtime_error("Index should have at least one offset");
+                return CffIndex();
             }
+
+            auto offsetSize = this->ReadBigEndian<uint8_t>(stream);
 
             std::vector<uint32_t> offsets;
             for (size_t i = 0; i <= (size_t)count; i++)
@@ -95,7 +104,7 @@ namespace fontio { namespace logic { namespace cff
             return CffNameIndex(names);
         }
 
-        std::vector<CffTopDict> ReadTopDicts(std::istream& stream, const CffIndex& index)
+        std::vector<CffTopDict> ReadTopDicts(std::istream& stream, const CffIndex& index, const CffStringIndex& strings)
         {
             std::vector<CffTopDict> result;
 
@@ -104,13 +113,69 @@ namespace fontio { namespace logic { namespace cff
                 auto dictStart = index.GetOffsets()[i];
                 auto dictEnd = index.GetOffsets()[i + 1];
 
-                result.push_back(this->ReadTopDict(stream, dictStart, dictEnd - dictStart));
+                result.push_back(this->ReadTopDict(stream, dictStart, dictEnd - dictStart, strings));
             }
 
             return result;
         }
 
-        CffTopDict ReadTopDict(std::istream& stream, uint32_t offset, uint32_t length)
+        CffTopDict ReadTopDict(std::istream& stream, uint32_t offset, uint32_t length, const CffStringIndex& strings)
+        {
+            auto dict = this->ReadDict(stream, offset, length);
+
+            auto charstringsOffset = dict.GetAsUint(CffOperatorType::CharStrings);
+            auto charstringsIndex = this->ReadIndex(stream, charstringsOffset);
+            auto charstringsFormat = dict.GetAsEnum<CffCharstringFormat>(CffOperatorType::CharstringType, CffCharstringFormat::Type2);
+            auto charstrings = this->ReadCharstrings(stream, charstringsIndex, charstringsFormat);
+
+            auto privateOffsetLength = dict.GetAsOffsetAndLength(CffOperatorType::Private);
+            auto privateDict = this->ReadPrivateDict(stream, privateOffsetLength.first, privateOffsetLength.second);
+
+            std::unique_ptr<ICffCharstrings> localSubroutines;
+            if (privateDict.GetSubrsOffset() > 0)
+            {
+                auto localSubroutineIndex = this->ReadIndex(stream, privateDict.GetSubrsOffset());
+                localSubroutines = this->ReadGlobalSubroutines(stream, localSubroutineIndex);
+            }
+
+            auto charsetOffset = dict.GetAsUint(CffOperatorType::Charset, 0);
+            auto charset = charstringsIndex.GetOffsets().size() > 0
+                ? this->LoadCharset(charsetOffset, stream, charstringsIndex.GetOffsets().size() - 1)
+                : std::unique_ptr<CffCharset>();
+
+            auto weightSid = dict.GetAsSid(CffOperatorType::Weight);
+            auto weight = strings.GetString(weightSid);
+
+            auto fontMatrix = CffFontMatrix(
+                dict.GetAsArray<double, 6>(
+                    CffOperatorType::FontMatrix,
+                    std::array<double, 6>({0.001, 0.0, 0.0, 0.001, 0.0, 0.0})));
+
+            auto boundBox = BoundBox(
+                dict.GetAsArray<int32_t, 4>(
+                    CffOperatorType::FontBBox,
+                    std::array<int32_t, 4>({0, 0, 0, 0})));
+
+            return CffTopDict(
+                weight,
+                fontMatrix,
+                boundBox,
+                std::move(charstrings),
+                std::move(charset),
+                std::move(localSubroutines));
+        }
+
+        CffPrivateDict ReadPrivateDict(std::istream& stream, uint32_t offset, uint32_t length)
+        {
+            auto dict = this->ReadDict(stream, offset, length);
+
+            return CffPrivateDict(
+                (dict.HasOperator(CffOperatorType::Subrs) ? dict.GetAsUint(CffOperatorType::Subrs) + offset : 0),
+                dict.GetAsInt(CffOperatorType::DefaultWidthX, 0),
+                dict.GetAsInt(CffOperatorType::NominalWidthX, 0));
+        }
+
+        CffDict ReadDict(std::istream& stream, uint32_t offset, uint32_t length)
         {
             std::unordered_map<CffOperatorType, std::vector<CffObject>> objects;
 
@@ -132,18 +197,7 @@ namespace fontio { namespace logic { namespace cff
                 }
             }
 
-            auto charstringsOffset = this->GetOffsetFromOperator(objects, CffOperatorType::CharStrings, false);
-            auto charstringsIndex = this->ReadIndex(stream, charstringsOffset);
-            auto charstrings = this->ReadCharstrings(stream, charstringsIndex, this->GetCharstringFormat(objects));
-
-            auto localSubroutineIndex = this->ReadIndex(stream, /* FIXME !!! */0);
-            auto localSubroutines = this->ReadGlobalSubroutines(stream, localSubroutineIndex);
-
-            auto charset = charstringsIndex.GetOffsets().size() > 0
-                ? this->LoadCharset(objects, stream, charstringsIndex.GetOffsets().size() - 1)
-                : std::unique_ptr<CffCharset>();
-
-            return CffTopDict(std::move(objects), std::move(charstrings), std::move(charset), std::move(localSubroutines));
+            return CffDict(std::move(objects));
         }
 
         std::unique_ptr<ICffCharstrings> ReadCharstrings(
@@ -175,58 +229,8 @@ namespace fontio { namespace logic { namespace cff
             }
         }
 
-        uint32_t GetOffsetFromOperator(
-            const std::unordered_map<CffOperatorType, std::vector<CffObject>>& objects,
-            CffOperatorType op,
-            bool canDefaultToZero) const
+        std::unique_ptr<CffCharset> LoadCharset(uint32_t charsetOffset, std::istream& stream, size_t totalGlyphs)
         {
-            auto pos = objects.find(op);
-            if (pos == objects.end())
-            {
-                if (canDefaultToZero)
-                {
-                    return 0;
-                }
-                else
-                {
-                    throw std::runtime_error("Missing value for operator");
-                }
-            }
-
-            auto& numbers = pos->second;
-
-            if (numbers.size() != 1)
-            {
-                throw std::runtime_error("Wrong format for offset operator: expected 1 integer.");
-            }
-
-            return (uint32_t)numbers[0].GetIntegerSafe();
-        }
-
-        CffCharstringFormat GetCharstringFormat(const std::unordered_map<CffOperatorType, std::vector<CffObject>>& objects) const
-        {
-            auto pos = objects.find(CffOperatorType::CharstringType);
-            if (pos == objects.end())
-            {
-                return CffCharstringFormat::Type2;
-            }
-
-            auto& numbers = pos->second;
-
-            if (numbers.size() != 1)
-            {
-                throw std::runtime_error("Wrong format for charstring type: expected 1 number.");
-            }
-
-            return (CffCharstringFormat)numbers[0].GetIntegerSafe();
-        }
-
-        std::unique_ptr<CffCharset> LoadCharset(
-            const std::unordered_map<CffOperatorType, std::vector<CffObject>>& objects,
-            std::istream& stream,
-            size_t totalGlyphs)
-        {
-            auto charsetOffset = this->GetOffsetFromOperator(objects, CffOperatorType::Charset, true);
             if (charsetOffset > 3)
             {
                 stream.seekg(charsetOffset, std::ios_base::beg);

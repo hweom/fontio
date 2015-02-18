@@ -42,7 +42,26 @@ namespace fontio { namespace model { namespace cff
         Charset = 0x000f,
         Encoding = 0x0010,
         CharStrings = 0x0011,
-        Private = 0x0012
+        Private = 0x0012,
+
+        BlueValues = 0x0006,
+        OtherBlues  = 0x0007,
+        FamilyBlues  = 0x0008,
+        FamilyOtherBlues  = 0x0009,
+        BlueScale = 0x0c09,
+        BlueShift = 0x0c0a,
+        BlueFuzz = 0x0c0b,
+        StdHW = 0x000a,
+        StdVW = 0x000b,
+        StemSnapH = 0x0c0c,
+        StemSnapV = 0x0c0d,
+        ForceBold = 0x0c0e,
+        LanguageGroup = 0x0c11,
+        ExpansionFactor = 0x0c12,
+        InitialRandomSeed = 0x0c13,
+        Subrs = 0x00013,
+        DefaultWidthX = 0x0014,
+        NominalWidthX = 0x0015
     };
 
     std::ostream& operator << (std::ostream& out, CffOperatorType type)

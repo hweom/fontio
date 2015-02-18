@@ -74,13 +74,7 @@ namespace fontio { namespace logic { namespace cff
 
         this->AssertFontBBoxEqual(BoundBox(-1199, -1241, 1194, 1061), topDict.GetBoundBox());
 
-        ASSERT_EQ("Regular", cff.GetStringIndex().GetString(topDict.GetWeightSid()));
-
-
-        for (auto& pair : topDict.GetOperators())
-        {
-            std::cout << pair.first << std::endl;
-        }
+        ASSERT_EQ("Regular", topDict.GetWeight());
     }
 
     TEST_F(CffReaderTests, CanReadCharset)
@@ -89,8 +83,6 @@ namespace fontio { namespace logic { namespace cff
 
         auto& strings = cff.GetStringIndex();
         auto& topDict = cff.GetTopDicts()[0];
-
-        ASSERT_EQ(CffCharsetType::Custom, topDict.GetCharsetType());
 
         auto& charset = topDict.GetCharset();
 

@@ -1,5 +1,6 @@
 #pragma once
 
+#include <array>
 #include <cinttypes>
 
 namespace fontio { namespace model
@@ -21,6 +22,15 @@ namespace fontio { namespace model
             , y0(y0)
             , x1(x1)
             , y1(y1)
+        {
+        }
+
+        template<typename T>
+        BoundBox(const std::array<T, 4>& a, typename std::enable_if<std::is_arithmetic<T>::value>::type* dummy = nullptr)
+            : x0(static_cast<int32_t>(a[0]))
+            , y0(static_cast<int32_t>(a[1]))
+            , x1(static_cast<int32_t>(a[2]))
+            , y1(static_cast<int32_t>(a[3]))
         {
         }
 

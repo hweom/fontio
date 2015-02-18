@@ -22,6 +22,12 @@ namespace fontio { namespace model { namespace cff
 
         std::unordered_map<CffOperatorType, std::vector<CffObject>> objects;
 
+        std::string weight;
+
+        CffFontMatrix fontMatrix;
+
+        BoundBox boundBox;
+
         std::unique_ptr<ICffCharstrings> charstrings;
 
         std::unique_ptr<CffCharset> charset;
@@ -31,11 +37,15 @@ namespace fontio { namespace model { namespace cff
     public:
 
         CffTopDict(
-            std::unordered_map<CffOperatorType, std::vector<CffObject>>&& objects,
+            const std::string& weight,
+            const CffFontMatrix& fontMatrix,
+            const BoundBox& boundBox,
             std::unique_ptr<ICffCharstrings>&& charstrings,
             std::unique_ptr<CffCharset>&& charset,
             std::unique_ptr<ICffCharstrings>&& localSubroutines)
-            : objects(std::move(objects))
+            : weight(weight)
+            , fontMatrix(fontMatrix)
+            , boundBox(boundBox)
             , charstrings(std::move(charstrings))
             , charset(std::move(charset))
             , localSubroutines(std::move(localSubroutines))
@@ -46,108 +56,17 @@ namespace fontio { namespace model { namespace cff
 
         CffFontMatrix GetFontMatrix() const
         {
-            auto pos = this->objects.find(CffOperatorType::FontMatrix);
-
-            if (pos != this->objects.end())
-            {
-                auto& numbers = pos->second;
-
-                if (numbers.size() != 6)
-                {
-                    throw std::runtime_error("Wrong format for font matrix: expected 6 numbers.");
-                }
-
-                return CffFontMatrix(
-                    numbers[0].GetRealSafe(),
-                    numbers[1].GetRealSafe(),
-                    numbers[2].GetRealSafe(),
-                    numbers[3].GetRealSafe(),
-                    numbers[4].GetRealSafe(),
-                    numbers[5].GetRealSafe());
-            }
-            else
-            {
-                return CffFontMatrix(0.001, 0.0, 0.0, 0.001, 0.0, 0.0);
-            }
+            return this->fontMatrix;
         }
 
         BoundBox GetBoundBox() const
         {
-            auto pos = this->objects.find(CffOperatorType::FontBBox);
-
-            if (pos != this->objects.end())
-            {
-                auto& numbers = pos->second;
-
-                if (numbers.size() != 4)
-                {
-                    throw std::runtime_error("Wrong format for font bbox: expected 4 numbers.");
-                }
-
-                return BoundBox(
-                    static_cast<int32_t>(numbers[0].GetRealSafe()),
-                    static_cast<int32_t>(numbers[1].GetRealSafe()),
-                    static_cast<int32_t>(numbers[2].GetRealSafe()),
-                    static_cast<int32_t>(numbers[3].GetRealSafe()));
-            }
-            else
-            {
-                return BoundBox(0, 0, 0, 0);
-            }
+            return this->boundBox;
         }
 
-        uint16_t GetWeightSid() const
+        const std::string GetWeight() const
         {
-            auto pos = this->objects.find(CffOperatorType::Weight);
-            if (pos == this->objects.end())
-            {
-                throw std::runtime_error("No weight record");
-            }
-
-            auto& numbers = pos->second;
-
-            if (numbers.size() != 1)
-            {
-                throw std::runtime_error("Wrong format for weight: expected 1 SID.");
-            }
-
-            return numbers[0].GetSidSafe();
-        }
-
-        CffCharsetType GetCharsetType() const
-        {
-            if (this->charset != nullptr)
-            {
-                return CffCharsetType::Custom;
-            }
-            else
-            {
-                auto pos = this->objects.find(CffOperatorType::Charset);
-                if (pos == this->objects.end())
-                {
-                    return CffCharsetType::ISOAdobe;
-                }
-
-                return (CffCharsetType)pos->second[0].GetIntegerSafe();
-            }
-        }
-
-        CffCharstringFormat GetCharstringFormat() const
-        {
-            auto pos = this->objects.find(CffOperatorType::CharstringType);
-            if (pos == this->objects.end())
-            {
-                return CffCharstringFormat::Type2;
-            }
-
-            auto& numbers = pos->second;
-
-            if (numbers.size() != 1)
-            {
-                throw std::runtime_error("Wrong format for charstring type: expected 1 number.");
-            }
-
-            return (CffCharstringFormat)numbers[0].GetIntegerSafe();
+            return this->weight;
         }
 
         const ICffCharstrings& GetCharstrings() const
@@ -162,25 +81,6 @@ namespace fontio { namespace model { namespace cff
             assert (this->charset != nullptr);
 
             return *this->charset;
-        }
-
-        bool HasOperator(CffOperatorType type) const
-        {
-            return this->objects.count(type) > 0;
-        }
-
-        const std::vector<CffObject>& GetOperands(CffOperatorType type) const
-        {
-            auto pos = this->objects.find(type);
-
-            assert (pos != this->objects.end());
-
-            return pos->second;
-        }
-
-        const std::unordered_map<CffOperatorType, std::vector<CffObject>>& GetOperators() const
-        {
-            return this->objects;
         }
     };
 } } }

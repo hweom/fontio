@@ -15,12 +15,21 @@ namespace fontio { namespace model { namespace cff
 
     public:
 
+        CffIndex()
+        {
+        }
+
         CffIndex(const std::vector<uint32_t>& offsets)
             : offsets(offsets)
         {
         }
 
     public:
+
+        bool IsEmpty() const
+        {
+            return this->offsets.empty();
+        }
 
         const std::vector<uint32_t>& GetOffsets() const
         {
