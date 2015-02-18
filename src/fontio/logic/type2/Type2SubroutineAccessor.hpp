@@ -12,12 +12,16 @@ namespace fontio { namespace logic { namespace type2
     {
     private:
 
-        const std::vector<Type2Charstring>& subroutines;
+        const std::vector<Type2Charstring>* subroutines = nullptr;
 
     public:
 
+        Type2SubroutineAccessor()
+        {
+        }
+
         Type2SubroutineAccessor(const std::vector<Type2Charstring>& subroutines)
-            : subroutines(subroutines)
+            : subroutines(&subroutines)
         {
         }
 

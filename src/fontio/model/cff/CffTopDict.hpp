@@ -82,5 +82,17 @@ namespace fontio { namespace model { namespace cff
 
             return *this->charset;
         }
+
+        bool HasLocalSubroutines() const
+        {
+            return this->localSubroutines != nullptr;
+        }
+
+        const ICffCharstrings& GetLocalSubroutines() const
+        {
+            assert (this->HasLocalSubroutines());
+
+            return *this->localSubroutines;
+        }
     };
 } } }

@@ -59,5 +59,17 @@ namespace fontio { namespace model { namespace cff
         {
             return this->stringIndex;
         }
+
+        bool HasGlobalSubroutines() const
+        {
+            return this->globalSubroutines != nullptr;
+        }
+
+        const ICffCharstrings& GetGlobalSubroutines() const
+        {
+            assert (this->HasGlobalSubroutines());
+
+            return *this->globalSubroutines;
+        }
     };
 } } }

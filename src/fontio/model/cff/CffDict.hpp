@@ -35,7 +35,7 @@ namespace fontio { namespace model { namespace cff
                 return defaultValue;
             }
 
-            auto& numbers = pos->second;
+            const auto& numbers = pos->second;
 
             if (numbers.size() != 1)
             {
@@ -53,7 +53,7 @@ namespace fontio { namespace model { namespace cff
                 throw std::runtime_error("Missing value for operator");
             }
 
-            auto& numbers = pos->second;
+            const auto& numbers = pos->second;
 
             if (numbers.size() != 1)
             {
@@ -83,7 +83,7 @@ namespace fontio { namespace model { namespace cff
                 return defaultValue;
             }
 
-            auto& numbers = pos->second;
+            const auto& numbers = pos->second;
 
             if (numbers.size() != 1)
             {
@@ -101,7 +101,7 @@ namespace fontio { namespace model { namespace cff
                 throw std::runtime_error("Missing value for operator");
             }
 
-            auto& numbers = pos->second;
+            const auto& numbers = pos->second;
 
             if (numbers.size() != 2)
             {
@@ -120,7 +120,7 @@ namespace fontio { namespace model { namespace cff
                 return defaultValue;
             }
 
-            auto& numbers = pos->second;
+            const auto& numbers = pos->second;
 
             if (numbers.size() != 1)
             {
@@ -140,7 +140,7 @@ namespace fontio { namespace model { namespace cff
                 return defaultValue;
             }
 
-            auto& numbers = pos->second;
+            const auto& numbers = pos->second;
 
             if (numbers.size() != N)
             {

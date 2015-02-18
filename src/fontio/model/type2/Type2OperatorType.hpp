@@ -57,7 +57,7 @@ namespace fontio { namespace model { namespace type2
         Flex1 = 0x0c25,
     };
 
-    std::ostream& operator << (std::ostream& out, Type2OperatorType type)
+    inline std::ostream& operator << (std::ostream& out, Type2OperatorType type)
     {
         switch (type)
         {

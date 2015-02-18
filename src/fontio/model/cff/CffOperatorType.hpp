@@ -64,9 +64,8 @@ namespace fontio { namespace model { namespace cff
         NominalWidthX = 0x0015
     };
 
-    std::ostream& operator << (std::ostream& out, CffOperatorType type)
+    inline std::ostream& operator << (std::ostream& out, CffOperatorType type)
     {
-
         switch (type)
         {
         case CffOperatorType::Version:

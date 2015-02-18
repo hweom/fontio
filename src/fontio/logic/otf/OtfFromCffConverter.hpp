@@ -3,7 +3,7 @@
 #include <fontio/logic/type2/Type2GlyphMetricsCalculator.hpp>
 #include <fontio/model/AdobeGlyphList.hpp>
 #include <fontio/model/cff/Cff.hpp>
-#include <fontio/model/cff/CffType2Charstring.hpp>
+#include <fontio/model/cff/CffType2Charstrings.hpp>
 #include <fontio/model/otf/Otf.hpp>
 
 namespace fontio { namespace logic { namespace otf
@@ -23,7 +23,7 @@ namespace fontio { namespace logic { namespace otf
 
         std::unique_ptr<Otf> ConvertFromCff(const Cff& cff, size_t fontIndex = 0)
         {
-            auto& topDict = cff.GetTopDicts()[fontIndex];
+            const auto& topDict = cff.GetTopDicts()[fontIndex];
 
             auto glyphMetrics =this->CalculateGlyphMetrics(topDict);
 
@@ -40,10 +40,10 @@ namespace fontio { namespace logic { namespace otf
             if (topDict.GetCharsetType() == CffCharsetType::Custom)
             {
                 AdobeGlyphList glyphList;
-                auto& strings = cff.GetStringIndex();
+                const auto& strings = cff.GetStringIndex();
 
                 std::vector<std::pair<uint16_t, uint16_t>> cmap;
-                for (auto& pair : topDict.GetCharset().GetGidToSidMap())
+                for (const auto& pair : topDict.GetCharset().GetGidToSidMap())
                 {
                     auto charName = strings.GetString(pair.second);
                     auto unicode = glyphList.GetUnicode(charName);
@@ -118,11 +118,22 @@ namespace fontio { namespace logic { namespace otf
             ));
         }
 
-        std::vector<GlyphMetrics> CalculateGlyphMetrics(const CffTopDict& topDict)
+        std::vector<GlyphMetrics> CalculateGlyphMetrics(const Cff& cff, const CffTopDict& topDict)
         {
             if (topDict.GetCharstringFormat() == CffCharstringFormat::Type2)
             {
-                return this->CalculateType2GlyphMetrics(topDict.GetCharset());
+                auto localSubroutines = topDict.HasLocalSubroutines()
+                    ? Type2SubroutineAccessor(static_cast<const CffType2Charstrings&>(topDict.GetLocalSubroutines()).GetCharstrings())
+                    : Type2SubroutineAccessor();
+
+                auto globalSubroutines = cff.HasGlobalSubroutines()
+                    ? Type2SubroutineAccessor(static_cast<const CffType2Charstrings&>(cff.GetGlobalSubroutines()).GetCharstrings())
+                    : Type2SubroutineAccessor();
+
+                return this->CalculateType2GlyphMetrics(
+                    static_cast<const CffType2Charstrings&>(*topDict.GetCharstrings()).GetCharstrings(),
+                    localSubroutines,
+                    globalSubroutines);
             }
             else
             {
@@ -130,7 +141,10 @@ namespace fontio { namespace logic { namespace otf
             }
         }
 
-        std::vector<GlyphMetrics> CalculateType2GlyphMetrics(const std::vector<std::unique_ptr<ICffCharstring>>& charstrings)
+        std::vector<GlyphMetrics> CalculateType2GlyphMetrics(
+            const std::vector<Type2Charstring>& charstrings,
+            Type2SubroutineAccessor localSubroutines,
+            Type2SubroutineAccessor globalSubroutines)
         {
             std::vector<GlyphMetrics> result;
 
@@ -140,7 +154,7 @@ namespace fontio { namespace logic { namespace otf
             {
                 assert (charstring->GetFormat() == CffCharstringFormat::Type2);
 
-                auto metrics = calculator.CalculateMetrics(static_cast<const CffType2Charstring&>(*charstring));
+                auto metrics = calculator.CalculateMetrics(charstrings, localSubroutines, globalSubroutines);
 
                 result.push_back(metrics);
             }

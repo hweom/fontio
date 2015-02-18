@@ -21,7 +21,7 @@ namespace fontio { namespace model { namespace cff
 
         const std::string& GetString(size_t index) const
         {
-            auto& stdStrings = GetStandardStrings();
+            const auto& stdStrings = GetStandardStrings();
             if (index < stdStrings.size())
             {
                 return stdStrings[index];

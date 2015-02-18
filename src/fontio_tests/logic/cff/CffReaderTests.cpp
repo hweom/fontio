@@ -68,7 +68,7 @@ namespace fontio { namespace logic { namespace cff
 
         ASSERT_EQ(1, cff.GetTopDicts().size());
 
-        auto& topDict = cff.GetTopDicts()[0];
+        const auto& topDict = cff.GetTopDicts()[0];
 
         this->AssertFontMatrixEqual(CffFontMatrix(0.001, 0.0, 0.0, 0.001, 0.0, 0.0), topDict.GetFontMatrix());
 
@@ -81,10 +81,10 @@ namespace fontio { namespace logic { namespace cff
     {
         auto cff = this->ReadFile("test_data/cff/bare.cff");
 
-        auto& strings = cff.GetStringIndex();
-        auto& topDict = cff.GetTopDicts()[0];
+        const auto& strings = cff.GetStringIndex();
+        const auto& topDict = cff.GetTopDicts()[0];
 
-        auto& charset = topDict.GetCharset();
+        const auto& charset = topDict.GetCharset();
 
         ASSERT_EQ(".notdef", strings.GetString(charset[0]));
         ASSERT_EQ("zero", strings.GetString(charset[17]));

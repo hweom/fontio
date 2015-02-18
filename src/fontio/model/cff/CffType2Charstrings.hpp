@@ -24,6 +24,11 @@ namespace fontio { namespace model { namespace cff
 
     public:
 
+        const std::vector<Type2Charstring>& GetCharstrings() const
+        {
+            return this->charstrings;
+        }
+
         virtual CffCharstringFormat GetFormat() const override
         {
             return CffCharstringFormat::Type2;
