@@ -18,5 +18,12 @@ namespace fontio { namespace model { namespace type2
             : objects(objects)
         {
         }
+
+    public:
+
+        const std::vector<Type2Object>& GetObjects() const
+        {
+            return this->objects;
+        }
     };
 } } }

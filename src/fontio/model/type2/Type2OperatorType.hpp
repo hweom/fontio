@@ -12,7 +12,7 @@ namespace fontio { namespace model { namespace type2
         VStem = 0x0003,
         VMoveTo = 0x0004,
         RLineTo = 0x0005,
-        hLineTo = 0x0006,
+        HLineTo = 0x0006,
         VLineTo = 0x0007,
         RRCurveTo = 0x0008,
         CallSubr = 0x000a,
@@ -69,7 +69,7 @@ namespace fontio { namespace model { namespace type2
             return out << "VMoveTo";
         case Type2OperatorType::RLineTo:
             return out << "RLineTo";
-        case Type2OperatorType::hLineTo:
+        case Type2OperatorType::HLineTo:
             return out << "hLineTo";
         case Type2OperatorType::VLineTo:
             return out << "VLineTo";
