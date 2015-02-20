@@ -36,14 +36,19 @@ namespace fontio { namespace logic { namespace type2
 
         const auto& charstrings = static_cast<const CffType2Charstrings&>(cff.GetTopDicts()[0].GetCharstrings()).GetCharstrings();
 
-        auto metrics = this->calculator.CalculateMetrics(charstrings[10], Type2SubroutineAccessor(), Type2SubroutineAccessor());
+        auto metrics = this->calculator.CalculateMetrics(
+            charstrings[10],
+            Type2SubroutineAccessor(),
+            Type2SubroutineAccessor(),
+            472,
+            220);
 
-        ASSERT_EQ(0, metrics.GetAdvanceWidth());
-        ASSERT_EQ(0, metrics.GetBoundBox().GetX0());
-        ASSERT_EQ(0, metrics.GetBoundBox().GetY0());
-        ASSERT_EQ(0, metrics.GetBoundBox().GetX1());
-        ASSERT_EQ(0, metrics.GetBoundBox().GetY1());
-        ASSERT_EQ(0, metrics.GetLeftSideBearings());
+        ASSERT_EQ(328, metrics.GetAdvanceWidth());
+        ASSERT_EQ(12, metrics.GetBoundBox().GetX0());
+        ASSERT_EQ(-120, metrics.GetBoundBox().GetY0());
+        ASSERT_EQ(273, metrics.GetBoundBox().GetX1());
+        ASSERT_EQ(739, metrics.GetBoundBox().GetY1());
+        ASSERT_EQ(12, metrics.GetLeftSideBearings());
     }
 
 } } }

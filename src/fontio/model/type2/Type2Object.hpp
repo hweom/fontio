@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <unordered_set>
 
 #include <fontio/model/type2/Type2OperatorType.hpp>
 
@@ -93,6 +94,50 @@ namespace fontio { namespace model { namespace type2
             {
                 throw std::runtime_error("Not an integer");
             }
+        }
+
+        bool IsStackClearingOperator() const
+        {
+            assert (this->IsOperator());
+
+            const auto& ops = GetStackClearingOperators();
+
+            return ops.count(this->operatorType) > 0;
+        }
+
+    private:
+
+        static const std::unordered_set<Type2OperatorType>& GetStackClearingOperators()
+        {
+            static std::unordered_set<Type2OperatorType> ops =
+            {
+                Type2OperatorType::RMoveTo,
+                Type2OperatorType::HMoveTo,
+                Type2OperatorType::VMoveTo,
+                Type2OperatorType::RLineTo,
+                Type2OperatorType::HLineTo,
+                Type2OperatorType::VLineTo,
+                Type2OperatorType::RRCurveTo,
+                Type2OperatorType::HHCurveTo,
+                Type2OperatorType::HVCurveTo,
+                Type2OperatorType::RCurveLine,
+                Type2OperatorType::RLineCurve,
+                Type2OperatorType::VHCurveTo,
+                Type2OperatorType::VVCurveTo,
+                Type2OperatorType::Flex,
+                Type2OperatorType::HFlex,
+                Type2OperatorType::HFlex1,
+                Type2OperatorType::Flex1,
+                Type2OperatorType::EndChar,
+                Type2OperatorType::HStem,
+                Type2OperatorType::VStem,
+                Type2OperatorType::HStemHM,
+                Type2OperatorType::VStemHM,
+                Type2OperatorType::HintMask,
+                Type2OperatorType::CntrMask
+            };
+
+            return ops;
         }
     };
 } } }

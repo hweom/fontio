@@ -23,16 +23,33 @@ namespace fontio { namespace logic { namespace type2
 
             this->Reset();
 
+            auto stackDepth = 0;
+
             auto start = (uint32_t)stream.tellg();
             while (((uint32_t)stream.tellg() - start) < length)
             {
                 auto object = this->ReadObject(stream);
 
-                if (object.IsOperator() &&
-                    ((object.GetOperator() == Type2OperatorType::HintMask) ||
-                     (object.GetOperator() == Type2OperatorType::CntrMask)))
+                if (object.IsOperator())
                 {
-                    this->ReadMask(stream, objects, object.GetArgCount());
+                    if ((object.GetOperator() == Type2OperatorType::HintMask) ||
+                        (object.GetOperator() == Type2OperatorType::CntrMask))
+                    {
+                        this->ReadMask(stream, objects, object.GetArgCount());
+                    }
+                    else if ((object.GetOperator() == Type2OperatorType::HStem) ||
+                        (object.GetOperator() == Type2OperatorType::VStem) ||
+                        (object.GetOperator() == Type2OperatorType::HStemHM) ||
+                        (object.GetOperator() == Type2OperatorType::VStemHM))
+                    {
+                        this->hintCount += stackDepth / 2;
+                    }
+
+                    stackDepth = 0;
+                }
+                else
+                {
+                    stackDepth++;
                 }
 
                 objects.push_back(object);
@@ -111,7 +128,7 @@ namespace fontio { namespace logic { namespace type2
             else if ((b0 >= 251) && (b0 <= 254))
             {
                 auto b1 = (uint8_t)stream.get();
-                auto number = -((int32_t)b0 - 247) * 256 - b1 - 108;
+                auto number = -((int32_t)b0 - 251) * 256 - b1 - 108;
                 return Type2Object(number);
             }
             else if (b0 == 28)

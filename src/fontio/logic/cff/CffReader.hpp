@@ -160,6 +160,8 @@ namespace fontio { namespace logic { namespace cff
                 weight,
                 fontMatrix,
                 boundBox,
+                privateDict.GetDefaultWidthX(),
+                privateDict.GetNominalWidthX(),
                 std::move(charstrings),
                 std::move(charset),
                 std::move(localSubroutines));
@@ -333,7 +335,7 @@ namespace fontio { namespace logic { namespace cff
             else if ((b0 >= 251) && (b0 <= 254))
             {
                 auto b1 = this->ReadBigEndian<uint8_t>(stream);
-                auto number = -((int32_t)b0 - 247) * 256 - b1 - 108;
+                auto number = -((int32_t)b0 - 251) * 256 - b1 - 108;
                 return CffObject(number);
             }
             else if (b0 == 28)

@@ -72,7 +72,7 @@ namespace fontio { namespace logic { namespace cff
 
         this->AssertFontMatrixEqual(CffFontMatrix(0.001, 0.0, 0.0, 0.001, 0.0, 0.0), topDict.GetFontMatrix());
 
-        this->AssertFontBBoxEqual(BoundBox(-1199, -1241, 1194, 1061), topDict.GetBoundBox());
+        this->AssertFontBBoxEqual(BoundBox(-175, -217, 1194, 1061), topDict.GetBoundBox());
 
         ASSERT_EQ("Regular", topDict.GetWeight());
     }

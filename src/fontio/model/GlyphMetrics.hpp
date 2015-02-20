@@ -12,9 +12,25 @@ namespace fontio { namespace model
 
         BoundBox boundBox;
 
-        uint32_t advanceWidth;
+        int32_t advanceWidth;
 
         int32_t leftSideBearings;
+
+    public:
+
+        GlyphMetrics()
+        {
+        }
+
+        GlyphMetrics(
+            BoundBox boundBox,
+            int32_t advanceWidth,
+            int32_t leftSideBearings)
+            : boundBox(boundBox)
+            , advanceWidth(advanceWidth)
+            , leftSideBearings(leftSideBearings)
+        {
+        }
 
     public:
 
@@ -23,7 +39,7 @@ namespace fontio { namespace model
             return this->boundBox;
         }
 
-        uint32_t GetAdvanceWidth() const
+        int32_t GetAdvanceWidth() const
         {
             return this->advanceWidth;
         }

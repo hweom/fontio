@@ -28,6 +28,10 @@ namespace fontio { namespace model { namespace cff
 
         BoundBox boundBox;
 
+        int32_t defaultWidthX;
+
+        int32_t nominalWidthX;
+
         std::unique_ptr<ICffCharstrings> charstrings;
 
         std::unique_ptr<CffCharset> charset;
@@ -40,12 +44,16 @@ namespace fontio { namespace model { namespace cff
             const std::string& weight,
             const CffFontMatrix& fontMatrix,
             const BoundBox& boundBox,
+            int32_t defaultWidthX,
+            int32_t nominalWidthX,
             std::unique_ptr<ICffCharstrings>&& charstrings,
             std::unique_ptr<CffCharset>&& charset,
             std::unique_ptr<ICffCharstrings>&& localSubroutines)
             : weight(weight)
             , fontMatrix(fontMatrix)
             , boundBox(boundBox)
+            , defaultWidthX(defaultWidthX)
+            , nominalWidthX(nominalWidthX)
             , charstrings(std::move(charstrings))
             , charset(std::move(charset))
             , localSubroutines(std::move(localSubroutines))
@@ -62,6 +70,16 @@ namespace fontio { namespace model { namespace cff
         BoundBox GetBoundBox() const
         {
             return this->boundBox;
+        }
+
+        int32_t GetDefaultWidthX() const
+        {
+            return this->defaultWidthX;
+        }
+
+        int32_t GetNominalWidthX() const
+        {
+            return this->nominalWidthX;
         }
 
         const std::string GetWeight() const
