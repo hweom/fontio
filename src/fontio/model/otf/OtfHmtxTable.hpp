@@ -3,10 +3,11 @@
 #include <vector>
 
 #include <fontio/model/GlyphMetrics.hpp>
+#include <fontio/model/otf/IOtfTable.hpp>
 
 namespace fontio { namespace model { namespace otf
 {
-    class OtfHmtxTable
+    class OtfHmtxTable : public IOtfTable
     {
     private:
 
@@ -24,6 +25,13 @@ namespace fontio { namespace model { namespace otf
         const std::vector<GlyphMetrics>& GetMetrics() const
         {
             return this->metrics;
+        }
+
+    public:
+
+        virtual OtfTableType GetType() const override
+        {
+            return OtfTableType::Hmtx;
         }
     };
 } } }

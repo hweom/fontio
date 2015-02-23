@@ -4,9 +4,11 @@
 #include <vector>
 #include <utility>
 
+#include <fontio/model/otf/IOtfTable.hpp>
+
 namespace fontio { namespace model { namespace otf
 {
-    class OtfCmapTable
+    class OtfCmapTable : public IOtfTable
     {
     private:
 
@@ -25,5 +27,16 @@ namespace fontio { namespace model { namespace otf
         {
         }
 
+    public:
+
+        const std::vector<std::pair<uint16_t, uint16_t>>& GetCmap() const
+        {
+            return this->cmap;
+        }
+
+        virtual OtfTableType GetType() const override
+        {
+            return OtfTableType::Cmap;
+        }
     };
 } } }

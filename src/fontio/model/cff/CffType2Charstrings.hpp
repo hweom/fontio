@@ -29,6 +29,11 @@ namespace fontio { namespace model { namespace cff
             return this->charstrings;
         }
 
+        virtual size_t GetCount() const override
+        {
+            return this->charstrings.size();
+        }
+
         virtual CffCharstringFormat GetFormat() const override
         {
             return CffCharstringFormat::Type2;

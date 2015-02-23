@@ -14,6 +14,7 @@ namespace fontio { namespace model { namespace cff
         Weight = 0x0004,
         FontBBox = 0x0005,
 
+        Copyright = 0x0c00,
         IsFixedPitch = 0x0c01,
         ItalicAngle = 0x0c02,
         UnderlinePosition = 0x0c03,

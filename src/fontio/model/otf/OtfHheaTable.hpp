@@ -2,9 +2,11 @@
 
 #include <cinttypes>
 
+#include <fontio/model/otf/IOtfTable.hpp>
+
 namespace fontio { namespace model { namespace otf
 {
-    class OtfHheaTable
+    class OtfHheaTable : public IOtfTable
     {
     private:
 
@@ -48,6 +50,13 @@ namespace fontio { namespace model { namespace otf
             , caretOffset(caretOffset)
             , numberOfHMetrics(numberOfHMetrics)
         {
+        }
+
+    public:
+
+        virtual OtfTableType GetType() const override
+        {
+            return OtfTableType::Hhea;
         }
     };
 } } }

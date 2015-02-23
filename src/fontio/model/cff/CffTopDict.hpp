@@ -20,7 +20,15 @@ namespace fontio { namespace model { namespace cff
     {
     private:
 
-        std::unordered_map<CffOperatorType, std::vector<CffObject>> objects;
+        std::string version;
+
+        std::string notice;
+
+        std::string copyright;
+
+        std::string fullName;
+
+        std::string familyName;
 
         std::string weight;
 
@@ -41,6 +49,11 @@ namespace fontio { namespace model { namespace cff
     public:
 
         CffTopDict(
+            const std::string version,
+            const std::string notice,
+            const std::string copyright,
+            const std::string fullName,
+            const std::string familyName,
             const std::string& weight,
             const CffFontMatrix& fontMatrix,
             const BoundBox& boundBox,
@@ -49,7 +62,12 @@ namespace fontio { namespace model { namespace cff
             std::unique_ptr<ICffCharstrings>&& charstrings,
             std::unique_ptr<CffCharset>&& charset,
             std::unique_ptr<ICffCharstrings>&& localSubroutines)
-            : weight(weight)
+            : version(version)
+            , notice(notice)
+            , copyright(copyright)
+            , fullName(fullName)
+            , familyName(familyName)
+            , weight(weight)
             , fontMatrix(fontMatrix)
             , boundBox(boundBox)
             , defaultWidthX(defaultWidthX)
@@ -61,6 +79,31 @@ namespace fontio { namespace model { namespace cff
         }
 
     public:
+
+        const std::string GetVersion() const
+        {
+            return this->version;
+        }
+
+        const std::string GetNotice() const
+        {
+            return this->notice;
+        }
+
+        const std::string GetCopyright() const
+        {
+            return this->copyright;
+        }
+
+        const std::string GetFullName() const
+        {
+            return this->fullName;
+        }
+
+        const std::string GetFamilyName() const
+        {
+            return this->familyName;
+        }
 
         CffFontMatrix GetFontMatrix() const
         {

@@ -2,9 +2,11 @@
 
 #include <cinttypes>
 
+#include <fontio/model/otf/IOtfTable.hpp>
+
 namespace fontio { namespace model { namespace otf
 {
-    class OtfHeadTable
+    class OtfHeadTable : public IOtfTable
     {
     private:
 
@@ -74,6 +76,13 @@ namespace fontio { namespace model { namespace otf
               macStyle(macStyle),
               lowestRecPpem(lowestRecPpem)
         {
+        }
+
+    public:
+
+        virtual OtfTableType GetType() const override
+        {
+            return OtfTableType::Head;
         }
     };
 } } }

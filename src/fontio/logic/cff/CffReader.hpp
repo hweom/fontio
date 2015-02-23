@@ -143,6 +143,21 @@ namespace fontio { namespace logic { namespace cff
                 ? this->LoadCharset(charsetOffset, stream, charstringsIndex.GetOffsets().size() - 1)
                 : std::unique_ptr<CffCharset>();
 
+            auto versionSid = dict.GetAsSid(CffOperatorType::Version);
+            auto version = strings.GetString(versionSid);
+
+            auto noticeSid = dict.GetAsSid(CffOperatorType::Notice);
+            auto notice = strings.GetString(noticeSid);
+
+            auto copyrightSid = dict.GetAsSid(CffOperatorType::Copyright);
+            auto copyright = strings.GetString(copyrightSid);
+
+            auto fullNameSid = dict.GetAsSid(CffOperatorType::FullName);
+            auto fullName = strings.GetString(fullNameSid);
+
+            auto familyNameSid = dict.GetAsSid(CffOperatorType::FamilyName);
+            auto familyName = strings.GetString(familyNameSid);
+
             auto weightSid = dict.GetAsSid(CffOperatorType::Weight);
             auto weight = strings.GetString(weightSid);
 
@@ -157,6 +172,11 @@ namespace fontio { namespace logic { namespace cff
                     std::array<int32_t, 4>({0, 0, 0, 0})));
 
             return CffTopDict(
+                version,
+                notice,
+                copyright,
+                fullName,
+                familyName,
                 weight,
                 fontMatrix,
                 boundBox,

@@ -14,6 +14,8 @@ namespace fontio { namespace model { namespace cff
 
     public:
 
+        virtual size_t GetCount() const = 0;
+
         virtual CffCharstringFormat GetFormat() const = 0;
     };
 } } }
