@@ -1,6 +1,7 @@
 #pragma once
 
 #include <map>
+#include <stdexcept>
 
 #include <fontio/model/otf/OtfNameId.hpp>
 #include <fontio/model/otf/IOtfTable.hpp>
@@ -30,6 +31,16 @@ namespace fontio { namespace model { namespace otf
         virtual OtfTableType GetType() const override
         {
             return OtfTableType::Name;
+        }
+
+        virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        virtual uint32_t GetId() const override
+        {
+            return 0x6e616d65; // name
         }
     };
 } } }

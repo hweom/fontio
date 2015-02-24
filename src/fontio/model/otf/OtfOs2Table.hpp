@@ -3,6 +3,7 @@
 #include <cinttypes>
 #include <cstring>
 #include <bitset>
+#include <stdexcept>
 
 #include <fontio/model/otf/IOtfTable.hpp>
 
@@ -136,6 +137,16 @@ namespace fontio { namespace model { namespace otf
         virtual OtfTableType GetType() const override
         {
             return OtfTableType::Os2;
+        }
+
+        virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        virtual uint32_t GetId() const override
+        {
+            return 0x4f532f32; // OS/2
         }
     };
 } } }

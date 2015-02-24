@@ -1,6 +1,7 @@
 #pragma once
 
 #include <cinttypes>
+#include <stdexcept>
 
 #include <fontio/model/otf/IOtfTable.hpp>
 
@@ -83,6 +84,16 @@ namespace fontio { namespace model { namespace otf
         virtual OtfTableType GetType() const override
         {
             return OtfTableType::Head;
+        }
+
+        virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
+        {
+            throw std::logic_error("Not implemented");
+        }
+
+        virtual uint32_t GetId() const override
+        {
+            return 0x68656164; // head
         }
     };
 } } }

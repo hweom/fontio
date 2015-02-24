@@ -19,6 +19,7 @@ include_directories(
 # Main library
 file(GLOB LIBRARY_LIST
     src/${PROJECT_NAME}/*.?pp
+    src/${PROJECT_NAME}/infrastructure/*.?pp
     src/${PROJECT_NAME}/logic/*.?pp
     src/${PROJECT_NAME}/logic/cff/*.?pp
     src/${PROJECT_NAME}/logic/otf/*.?pp
