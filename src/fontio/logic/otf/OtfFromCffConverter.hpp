@@ -81,9 +81,6 @@ namespace fontio { namespace logic { namespace otf
             auto bbox = topDict.GetBoundBox();
 
             return std::unique_ptr<OtfHeadTable>(new OtfHeadTable(
-                1,
-                0,
-                1,
                 0,
                 this->GetHeadFlags(topDict),
                 fontsPerEm,
@@ -116,6 +113,8 @@ namespace fontio { namespace logic { namespace otf
 
         std::unique_ptr<OtfHheaTable> ConvertHheaTable(const CffTopDict& topDict, const std::vector<GlyphMetrics>& glyphMetrics)
         {
+            int16_t ascent = 0;
+            int16_t descent = 0;
             int16_t advanceWidthMax = 0;
             int16_t	minLeftSideBearing = 0;
             int16_t minRightSideBearing = 0;
@@ -126,6 +125,8 @@ namespace fontio { namespace logic { namespace otf
                 auto rightSideBearing = static_cast<int16_t>(metrics.GetAdvanceWidth() - metrics.GetLeftSideBearings() - metrics.GetBoundBox().GetWidth());
                 auto extent = static_cast<int16_t>(metrics.GetLeftSideBearings() + metrics.GetBoundBox().GetWidth());
 
+                ascent = std::max(ascent, static_cast<int16_t>(metrics.GetBoundBox().GetY1()));
+                descent = std::min(descent, static_cast<int16_t>(metrics.GetBoundBox().GetY0()));
                 advanceWidthMax = std::max(advanceWidthMax, static_cast<int16_t>(metrics.GetAdvanceWidth()));
                 minLeftSideBearing = std::min(minLeftSideBearing, static_cast<int16_t>(metrics.GetLeftSideBearings()));
                 minRightSideBearing = std::min(minRightSideBearing, rightSideBearing);
@@ -133,6 +134,8 @@ namespace fontio { namespace logic { namespace otf
             }
 
             return std::unique_ptr<OtfHheaTable>(new OtfHheaTable(
+                ascent,
+                descent,
                 DEFAULT_LINE_GAP,
                 advanceWidthMax,
                 minLeftSideBearing,

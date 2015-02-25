@@ -29,16 +29,18 @@ namespace fontio { namespace model { namespace otf
 
         void Save(std::ostream& out) const
         {
+            OtfTableCrc globalCrc;
+
             auto startPos = out.tellp();
 
-            this->WriteSfnt(out);
+            this->WriteSfnt(out, globalCrc);
 
-            this->WriteTableRecords(out, startPos);
+            this->WriteTableRecords(out, startPos, globalCrc);
         }
 
     private:
 
-        void WriteSfnt(std::ostream& out) const
+        void WriteSfnt(std::ostream& out, OtfTableCrc& globalCrc) const
         {
             auto searchRange = static_cast<uint16_t>(this->tables.size());
             auto entrySelector = static_cast<uint16_t>(0);
@@ -57,14 +59,21 @@ namespace fontio { namespace model { namespace otf
             WriteBytes<BigEndian>(out, static_cast<uint16_t>(this->tables.size() * 16 - searchRange));
         }
 
-        void WriteTableRecords(std::ostream& out, std::ostream::pos_type fileStart) const
+        void WriteTableRecords(std::ostream& out, std::ostream::pos_type fileStart, OtfTableCrc& globalCrc) const
         {
+            std::ostream::pos_type globalCrcPos = 0;
+
             size_t tableIndex = 0;
             for (const auto& table : this->tables)
             {
                 OtfTableCrc crc;
 
                 auto tableStart = out.tellp();
+
+                if (table->GetType() == OtfTableType::Head)
+                {
+                    globalCrcPos = tableStart + static_cast<std::streamoff>(8);
+                }
 
                 table->Save(out, crc);
 
@@ -80,10 +89,20 @@ namespace fontio { namespace model { namespace otf
                     table->GetId(),
                     crc.GetCrc(),
                     static_cast<uint32_t>(tableStart),
-                    static_cast<uint32_t>(tableLength));
+                    static_cast<uint32_t>(tableLength),
+                    globalCrc);
 
                 tableIndex++;
+
+                globalCrc.Adjust(crc.GetCrc());
             }
+
+            if (globalCrcPos == 0)
+            {
+                throw std::runtime_error("No head table in OTF!");
+            }
+
+            this->WriteGlobalCrc(out, globalCrcPos, globalCrc.GetCrc());
         }
 
         void PadTable(std::ostream& out, OtfTableCrc& crc) const
@@ -94,6 +113,13 @@ namespace fontio { namespace model { namespace otf
             }
         }
 
+        void WriteGlobalCrc(std::ostream& out, std::ostream::pos_type globalCrcPos, uint32_t globalCrc) const
+        {
+            out.seekp(globalCrcPos);
+
+            WriteBytes<BigEndian>(out, 0xB1B0AFBAUL - globalCrc);
+        }
+
         void WriteTableIndices(
             std::ostream& out,
             std::ostream::pos_type fileStart,
@@ -101,14 +127,15 @@ namespace fontio { namespace model { namespace otf
             uint32_t tableId,
             uint32_t tableCrc,
             uint32_t tableOffset,
-            uint32_t tableLength) const
+            uint32_t tableLength,
+            OtfTableCrc& globalCrc) const
         {
             out.seekp(fileStart + static_cast<std::streamoff>(12 + 16 * tableIndex));
 
-            WriteBytes<BigEndian>(out, tableId);
-            WriteBytes<BigEndian>(out, tableCrc);
-            WriteBytes<BigEndian>(out, tableOffset);
-            WriteBytes<BigEndian>(out, tableLength);
+            WriteBytes<BigEndian>(out, tableId, globalCrc);
+            WriteBytes<BigEndian>(out, tableCrc, globalCrc);
+            WriteBytes<BigEndian>(out, tableOffset, globalCrc);
+            WriteBytes<BigEndian>(out, tableLength, globalCrc);
         }
     };
 } } }

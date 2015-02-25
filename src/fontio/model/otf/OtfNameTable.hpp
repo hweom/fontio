@@ -3,11 +3,14 @@
 #include <map>
 #include <stdexcept>
 
+#include <fontio/infrastructure/ByteIo.hpp>
 #include <fontio/model/otf/OtfNameId.hpp>
 #include <fontio/model/otf/IOtfTable.hpp>
 
 namespace fontio { namespace model { namespace otf
 {
+    using namespace fontio::infrastructure;
+
     class OtfNameTable : public IOtfTable
     {
     private:

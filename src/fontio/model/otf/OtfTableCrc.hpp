@@ -28,6 +28,11 @@ namespace fontio { namespace model { namespace otf
             }
         }
 
+        void Adjust(uint32_t crcAdjustment)
+        {
+            this->crc += crcAdjustment;
+        }
+
         uint32_t GetCrc() const
         {
             return this->crc;

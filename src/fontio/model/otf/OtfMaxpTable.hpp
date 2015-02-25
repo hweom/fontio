@@ -3,11 +3,14 @@
 #include <cinttypes>
 #include <stdexcept>
 
+#include <fontio/infrastructure/ByteIo.hpp>
 #include <fontio/model/otf/OtfMaxpTableVersion.hpp>
 #include <fontio/model/otf/IOtfTable.hpp>
 
 namespace fontio { namespace model { namespace otf
 {
+    using namespace fontio::infrastructure;
+
     class OtfMaxpTable : public IOtfTable
     {
     private:
@@ -43,7 +46,9 @@ namespace fontio { namespace model { namespace otf
 
         virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
         {
-            throw std::logic_error("Not implemented");
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(0x00005000UL), crc);
+
+            WriteBytes<BigEndian>(out, this->numGlyphs, crc);
         }
 
         virtual uint32_t GetId() const override

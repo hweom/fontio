@@ -3,21 +3,18 @@
 #include <cinttypes>
 #include <stdexcept>
 
+#include <fontio/infrastructure/ByteIo.hpp>
 #include <fontio/model/otf/IOtfTable.hpp>
 
 namespace fontio { namespace model { namespace otf
 {
+    using namespace fontio::infrastructure;
+
     class OtfHeadTable : public IOtfTable
     {
     private:
 
-        uint16_t versionMajor;
-
-        uint16_t versionMinor;
-
-        uint16_t fontRevisionMajor;
-
-        uint16_t fontRevisionMinor;
+        uint32_t fontRevision;
 
         uint16_t flags;
 
@@ -39,8 +36,6 @@ namespace fontio { namespace model { namespace otf
 
         uint16_t lowestRecPpem;
 
-        int16_t fontDirectionHint = 2;
-
     public:
 
         OtfHeadTable()
@@ -48,10 +43,7 @@ namespace fontio { namespace model { namespace otf
         }
 
         OtfHeadTable(
-            uint16_t versionMajor,
-            uint16_t versionMinor,
-            uint16_t fontRevisionMajor,
-            uint16_t fontRevisionMinor,
+            uint32_t fontRevision,
             uint16_t flags,
             uint16_t unitsPerEm,
             int64_t created,
@@ -62,10 +54,7 @@ namespace fontio { namespace model { namespace otf
             int16_t ymax,
             uint16_t macStyle,
             uint16_t lowestRecPpem)
-            : versionMajor(versionMajor),
-              versionMinor(versionMinor),
-              fontRevisionMajor(fontRevisionMajor),
-              fontRevisionMinor(fontRevisionMinor),
+            : fontRevision(fontRevision),
               flags(flags),
               unitsPerEm(unitsPerEm),
               created(created),
@@ -88,7 +77,25 @@ namespace fontio { namespace model { namespace otf
 
         virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
         {
-            throw std::logic_error("Not implemented");
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(0x0001000UL), crc);       // Version 1.0
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(0x0001000UL), crc);       // Font revision.
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(0), crc);                 // Placeholder for global CRC.
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(0x5F0F3CF5UL), crc);      // Magic number.
+
+            WriteBytes<BigEndian>(out, this->flags, crc);
+            WriteBytes<BigEndian>(out, this->unitsPerEm, crc);
+            WriteBytes<BigEndian>(out, this->created, crc);
+            WriteBytes<BigEndian>(out, this->modified, crc);
+            WriteBytes<BigEndian>(out, this->xmin, crc);
+            WriteBytes<BigEndian>(out, this->ymin, crc);
+            WriteBytes<BigEndian>(out, this->xmax, crc);
+            WriteBytes<BigEndian>(out, this->ymax, crc);
+            WriteBytes<BigEndian>(out, this->macStyle, crc);
+            WriteBytes<BigEndian>(out, this->lowestRecPpem, crc);
+
+            WriteBytes<BigEndian>(out, static_cast<int32_t>(2), crc);                  // Font direction hint.
+            WriteBytes<BigEndian>(out, static_cast<int32_t>(0), crc);                  // Index to loc format.
+            WriteBytes<BigEndian>(out, static_cast<int32_t>(0), crc);                  // Glyph data format.
         }
 
         virtual uint32_t GetId() const override
