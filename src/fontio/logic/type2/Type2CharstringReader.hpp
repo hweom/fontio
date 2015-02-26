@@ -1,5 +1,6 @@
 #pragma once
 
+#include <iostream>
 #include <memory>
 #include <vector>
 
@@ -32,17 +33,22 @@ namespace fontio { namespace logic { namespace type2
 
                 if (object.IsOperator())
                 {
+                    if ((object.GetOperator() == Type2OperatorType::HStem) ||
+                        (object.GetOperator() == Type2OperatorType::VStem) ||
+                        (object.GetOperator() == Type2OperatorType::HStemHM) ||
+                        (object.GetOperator() == Type2OperatorType::VStemHM) ||
+                        (object.GetOperator() == Type2OperatorType::HintMask) ||
+                        (object.GetOperator() == Type2OperatorType::CntrMask))
+                    {
+                        this->hintCount += stackDepth / 2;
+                    }
+
                     if ((object.GetOperator() == Type2OperatorType::HintMask) ||
                         (object.GetOperator() == Type2OperatorType::CntrMask))
                     {
+                        object = Type2Object(object.GetOperator(), this->hintCount);
+
                         this->ReadMask(stream, objects, object.GetArgCount());
-                    }
-                    else if ((object.GetOperator() == Type2OperatorType::HStem) ||
-                        (object.GetOperator() == Type2OperatorType::VStem) ||
-                        (object.GetOperator() == Type2OperatorType::HStemHM) ||
-                        (object.GetOperator() == Type2OperatorType::VStemHM))
-                    {
-                        this->hintCount += stackDepth / 2;
                     }
 
                     stackDepth = 0;
@@ -51,6 +57,8 @@ namespace fontio { namespace logic { namespace type2
                 {
                     stackDepth++;
                 }
+
+                // std::cout << "<" << object << "> ";
 
                 objects.push_back(object);
             }
@@ -74,10 +82,14 @@ namespace fontio { namespace logic { namespace type2
             {
                 auto byte = (uint8_t)stream.get();
 
+                // std::cout << std::hex << (uint32_t)byte << " ";
+
                 word = word | ((uint32_t)byte << (3 - byteIndex) * 8);
 
                 if (byteIndex == 3)
                 {
+                    // std::cout << "<" << word << "> ";
+
                     objects.push_back(Type2Object(word));
                     word = 0;
                     byteIndex = 0;
@@ -90,6 +102,8 @@ namespace fontio { namespace logic { namespace type2
 
             if (byteIndex > 0)
             {
+                // std::cout << "<" << word << "> ";
+
                 objects.push_back(Type2Object(word));
             }
         }
@@ -98,12 +112,9 @@ namespace fontio { namespace logic { namespace type2
         {
             auto b0 = (uint8_t)stream.get();
 
-            if (this->IsMaskOperator(b0))
-            {
-                auto operatorType = (Type2OperatorType)b0;
-                return Type2Object(operatorType, this->hintCount);
-            }
-            else if (this->IsOneByteOperator(b0))
+            // std::cout << std::hex << (uint32_t)b0 << " ";
+
+            if (this->IsOneByteOperator(b0))
             {
                 auto operatorType = (Type2OperatorType)b0;
                 return Type2Object(operatorType);
@@ -111,6 +122,9 @@ namespace fontio { namespace logic { namespace type2
             else if (this->IsTwoByteOperator(b0))
             {
                 auto b1 = (uint8_t)stream.get();
+
+                // std::cout << std::hex << (uint32_t)b1 << " ";
+
                 auto operatorType = (Type2OperatorType)(((uint16_t)b0 << 8) | b1);
                 return Type2Object(operatorType);
             }
@@ -122,12 +136,18 @@ namespace fontio { namespace logic { namespace type2
             else if ((b0 >= 247) && (b0 <= 250))
             {
                 auto b1 = (uint8_t)stream.get();
+
+                // std::cout << std::hex << (uint32_t)b1 << " ";
+
                 auto number = ((int32_t)b0 - 247) * 256 + b1 + 108;
                 return Type2Object(number);
             }
             else if ((b0 >= 251) && (b0 <= 254))
             {
                 auto b1 = (uint8_t)stream.get();
+
+                // std::cout << std::hex << (uint32_t)b1 << " ";
+
                 auto number = -((int32_t)b0 - 251) * 256 - b1 - 108;
                 return Type2Object(number);
             }
@@ -135,6 +155,9 @@ namespace fontio { namespace logic { namespace type2
             {
                 auto b1 = (uint8_t)stream.get();
                 auto b2 = (uint8_t)stream.get();
+
+                // std::cout << (uint32_t)b1 << " " << (uint32_t)b2 << " ";
+
                 auto number = ((int32_t)b1 << 8) | b2;
                 return Type2Object(number);
             }
@@ -144,6 +167,9 @@ namespace fontio { namespace logic { namespace type2
                 auto b2 = (uint8_t)stream.get();
                 auto b3 = (uint8_t)stream.get();
                 auto b4 = (uint8_t)stream.get();
+
+                // std::cout << std::hex << (uint32_t)b1 << " " << (uint32_t)b2 << " "<< (uint32_t)b3 << " "<< (uint32_t)b4 << " ";
+
                 auto number =
                     ((int32_t)b1 << 24) |
                     ((int32_t)b2 << 16) |
@@ -155,13 +181,6 @@ namespace fontio { namespace logic { namespace type2
             {
                 throw std::runtime_error("Unknown value format");
             }
-        }
-
-        bool IsMaskOperator(uint8_t byte)
-        {
-            return
-                ((uint16_t)byte == (uint16_t)Type2OperatorType::HintMask) ||
-                ((uint16_t)byte == (uint16_t)Type2OperatorType::CntrMask);
         }
 
         bool IsTwoByteOperator(uint8_t byte)

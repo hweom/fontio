@@ -119,6 +119,17 @@ namespace fontio { namespace logic { namespace cff
             return result;
         }
 
+        std::string GetDictString(const CffDict& dict, CffOperatorType op, const CffStringIndex& strings, const std::string& defaultValue = "")
+        {
+            if (dict.HasOperator(op))
+            {
+                auto valueSid = dict.GetAsSid(op);
+                return strings.GetString(valueSid);
+            }
+
+            return defaultValue;
+        }
+
         CffTopDict ReadTopDict(std::istream& stream, uint32_t offset, uint32_t length, const CffStringIndex& strings)
         {
             auto dict = this->ReadDict(stream, offset, length);
@@ -143,23 +154,12 @@ namespace fontio { namespace logic { namespace cff
                 ? this->LoadCharset(charsetOffset, stream, charstringsIndex.GetOffsets().size() - 1)
                 : std::unique_ptr<CffCharset>();
 
-            auto versionSid = dict.GetAsSid(CffOperatorType::Version);
-            auto version = strings.GetString(versionSid);
-
-            auto noticeSid = dict.GetAsSid(CffOperatorType::Notice);
-            auto notice = strings.GetString(noticeSid);
-
-            auto copyrightSid = dict.GetAsSid(CffOperatorType::Copyright);
-            auto copyright = strings.GetString(copyrightSid);
-
-            auto fullNameSid = dict.GetAsSid(CffOperatorType::FullName);
-            auto fullName = strings.GetString(fullNameSid);
-
-            auto familyNameSid = dict.GetAsSid(CffOperatorType::FamilyName);
-            auto familyName = strings.GetString(familyNameSid);
-
-            auto weightSid = dict.GetAsSid(CffOperatorType::Weight);
-            auto weight = strings.GetString(weightSid);
+            auto version = this->GetDictString(dict, CffOperatorType::Version, strings);
+            auto notice = this->GetDictString(dict, CffOperatorType::Notice, strings);
+            auto copyright = this->GetDictString(dict, CffOperatorType::Copyright, strings);
+            auto fullName = this->GetDictString(dict, CffOperatorType::FullName, strings);
+            auto familyName = this->GetDictString(dict, CffOperatorType::FamilyName, strings);
+            auto weight = this->GetDictString(dict, CffOperatorType::Weight, strings, "Regular");
 
             auto fontMatrix = CffFontMatrix(
                 dict.GetAsArray<double, 6>(
@@ -239,6 +239,8 @@ namespace fontio { namespace logic { namespace cff
                     auto end = index.GetOffsets()[i + 1];
 
                     stream.seekg(start, std::ios_base::beg);
+
+                    std::cout << "\n\n\n" << i << ": ";
 
                     charstrings.emplace_back(type2Reader.ReadType2Charstring(stream, end - start));
                 }

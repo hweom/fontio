@@ -1,5 +1,7 @@
 #pragma once
 
+#include <vector>
+
 #include <fontio/model/Point2.hpp>
 
 namespace fontio { namespace logic { namespace type2
@@ -21,5 +23,7 @@ namespace fontio { namespace logic { namespace type2
         virtual void AddHorizontalHint(int y0, int y1) = 0;
 
         virtual void AddVerticalHint(int x0, int x1) = 0;
+
+        virtual void EnableHints(const std::vector<bool>& mask) = 0;
     };
 } } }

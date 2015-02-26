@@ -105,6 +105,24 @@ namespace fontio { namespace model { namespace type2
             return ops.count(this->operatorType) > 0;
         }
 
+        friend inline std::ostream& operator << (std::ostream& out, const Type2Object& obj)
+        {
+            if (obj.IsOperator())
+            {
+                out << obj.operatorType;
+                if (obj.argCount != 0)
+                {
+                    out << ":" << std::dec << obj.argCount;
+                }
+            }
+            else
+            {
+                out << std::dec << obj.integerValue;
+            }
+
+            return out;
+        }
+
     private:
 
         static const std::unordered_set<Type2OperatorType>& GetStackClearingOperators()

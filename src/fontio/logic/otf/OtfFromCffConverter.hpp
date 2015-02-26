@@ -245,6 +245,7 @@ namespace fontio { namespace logic { namespace otf
             int heightUnit = static_cast<int>(1.0 / topDict.GetFontMatrix().GetScale());
 
             return std::unique_ptr<OtfPostTable>(new OtfPostTable(
+                OtfPostTableVersion::Version_3_0,
                 0.0f,
                 static_cast<int16_t>(-heightUnit * 0.125),
                 static_cast<int16_t>(heightUnit * 0.05),
@@ -282,6 +283,7 @@ namespace fontio { namespace logic { namespace otf
 
             Type2GlyphMetricsCalculator calculator;
 
+            size_t idx = 0;
             for (const auto& charstring : charstrings)
             {
                 auto metrics = calculator.CalculateMetrics(
@@ -292,6 +294,8 @@ namespace fontio { namespace logic { namespace otf
                     topDict.GetDefaultWidthX());
 
                 result.push_back(metrics);
+
+                idx++;
             }
 
             return result;

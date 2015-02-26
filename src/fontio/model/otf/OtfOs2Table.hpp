@@ -5,10 +5,13 @@
 #include <bitset>
 #include <stdexcept>
 
+#include <fontio/infrastructure/ByteIo.hpp>
 #include <fontio/model/otf/IOtfTable.hpp>
 
 namespace fontio { namespace model { namespace otf
 {
+    using namespace fontio::infrastructure;
+
     class OtfOs2Table : public IOtfTable
     {
     public:
@@ -141,12 +144,79 @@ namespace fontio { namespace model { namespace otf
 
         virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
         {
-            throw std::logic_error("Not implemented");
+            WriteBytes<BigEndian>(out, static_cast<uint16_t>(4), crc);          // Version.
+
+            WriteBytes<BigEndian>(out, this->xAvgcharWidth, crc);
+            WriteBytes<BigEndian>(out, this->usWeightClass, crc);
+            WriteBytes<BigEndian>(out, this->usWidthClass, crc);
+            WriteBytes<BigEndian>(out, this->fsType, crc);
+            WriteBytes<BigEndian>(out, this->ySubscriptXSize, crc);
+            WriteBytes<BigEndian>(out, this->ySubscriptYSize, crc);
+            WriteBytes<BigEndian>(out, this->ySubscriptXOffset, crc);
+            WriteBytes<BigEndian>(out, this->ySubscriptYOffset, crc);
+            WriteBytes<BigEndian>(out, this->ySuperscriptXSize, crc);
+            WriteBytes<BigEndian>(out, this->ySuperscriptYSize, crc);
+            WriteBytes<BigEndian>(out, this->ySuperscriptXOffset, crc);
+            WriteBytes<BigEndian>(out, this->ySuperscriptYOffset, crc);
+            WriteBytes<BigEndian>(out, this->yStrikeoutSize, crc);
+            WriteBytes<BigEndian>(out, this->yStrikeoutPosition, crc);
+            WriteBytes<BigEndian>(out, this->sFamilyClass, crc);
+
+            WriteBytes<BigEndian>(out, this->panose.bFamilyType, crc);
+            WriteBytes<BigEndian>(out, this->panose.bSerifStyle, crc);
+            WriteBytes<BigEndian>(out, this->panose.bWeight, crc);
+            WriteBytes<BigEndian>(out, this->panose.bProportion, crc);
+            WriteBytes<BigEndian>(out, this->panose.bContrast, crc);
+            WriteBytes<BigEndian>(out, this->panose.bStrokeVariation, crc);
+            WriteBytes<BigEndian>(out, this->panose.bArmStyle, crc);
+            WriteBytes<BigEndian>(out, this->panose.bLetterform, crc);
+            WriteBytes<BigEndian>(out, this->panose.bMidline, crc);
+            WriteBytes<BigEndian>(out, this->panose.bXHeight, crc);
+
+            this->SaveBitset(out, this->unicodeRanges, crc);
+
+            WriteBytes<BigEndian>(out, *reinterpret_cast<const uint32_t*>(&this->achVendID), crc);
+            WriteBytes<BigEndian>(out, this->fsSelection, crc);
+            WriteBytes<BigEndian>(out, this->usFirstcharIndex, crc);
+            WriteBytes<BigEndian>(out, this->usLastcharIndex, crc);
+            WriteBytes<BigEndian>(out, this->sTypoAscender, crc);
+            WriteBytes<BigEndian>(out, this->sTypoDescender, crc);
+            WriteBytes<BigEndian>(out, this->sTypoLineGap, crc);
+            WriteBytes<BigEndian>(out, this->usWinAscent, crc);
+            WriteBytes<BigEndian>(out, this->usWinDescent, crc);
+            WriteBytes<BigEndian>(out, this->ulCodePageRange, crc);
+            WriteBytes<BigEndian>(out, this->sxHeight, crc);
+            WriteBytes<BigEndian>(out, this->sCapHeight, crc);
+            WriteBytes<BigEndian>(out, this->usDefaultchar, crc);
+            WriteBytes<BigEndian>(out, this->usBreakchar, crc);
+            WriteBytes<BigEndian>(out, this->usMaxContext, crc);
         }
 
         virtual uint32_t GetId() const override
         {
             return 0x4f532f32; // OS/2
+        }
+
+    private:
+
+        template<size_t N>
+        void SaveBitset(std::ostream& out, const std::bitset<N>& bits, OtfTableCrc& crc) const
+        {
+            assert ((N % 8) == 0);
+
+            uint8_t byte = 0;
+            size_t bitsInByte = 0;
+            for (int i = N - 1; i >= 0; i--)
+            {
+                byte = (byte << 1) | (bits[static_cast<size_t>(i)] ? 1 : 0);
+
+                if (++bitsInByte == 8)
+                {
+                    WriteBytes<BigEndian>(out, byte, crc);
+                    byte = 0;
+                    bitsInByte = 0;
+                }
+            }
         }
     };
 } } }

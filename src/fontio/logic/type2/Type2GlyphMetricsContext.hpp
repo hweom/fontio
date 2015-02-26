@@ -157,6 +157,10 @@ namespace fontio { namespace logic { namespace type2
         virtual void AddVerticalHint(int x0, int x1) override
         {
         }
+
+        virtual void EnableHints(const std::vector<bool>& mask) override
+        {
+        }
     };
 
     template<>

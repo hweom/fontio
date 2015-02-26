@@ -80,6 +80,27 @@ namespace fontio { namespace logic { namespace type2
             }
         }
 
+        void RLineTo(IType2Context& context)
+        {
+            while (this->stack.size() >= 2)
+            {
+                this->currentPoint += this->ToPoint(this->GetFromBottom(2));
+                context.LineTo(this->currentPoint);
+            }
+        }
+
+        void RrCurveTo(IType2Context& context)
+        {
+            for (const auto& triple : this->ToPointTuples<3>(this->GetPacksFromBottom(6)))
+            {
+                auto t1 = this->currentPoint + triple[0];
+                auto t2 = t1 + triple[1];
+                this->currentPoint = t2 + triple[2];
+
+                context.BezierTo(t1, t2, this->currentPoint);
+            }
+        }
+
         bool ExecuteOperator(IType2Context& context, Type2OperatorType op, uint16_t argCount, bool stackClearing)
         {
             int hintPos = 0;
@@ -127,8 +148,7 @@ namespace fontio { namespace logic { namespace type2
                 context.MoveTo(this->currentPoint);
 
             case Type2OperatorType::RLineTo:
-                this->currentPoint += this->ToPoint(this->GetFromBottom(2));
-                context.LineTo(this->currentPoint);
+                this->RLineTo(context);
                 break;
 
             case Type2OperatorType::HLineTo:
@@ -140,15 +160,7 @@ namespace fontio { namespace logic { namespace type2
                 break;
 
             case Type2OperatorType::RRCurveTo:
-                for (const auto& triple : this->ToPointTuples<3>(this->GetPacksFromBottom(6)))
-                {
-                    auto t1 = this->currentPoint + triple[0];
-                    auto t2 = t1 + triple[1];
-                    this->currentPoint = t2 + triple[2];
-
-                    context.BezierTo(t1, t2, this->currentPoint);
-                }
-
+                this->RrCurveTo(context);
                 break;
 
             case Type2OperatorType::CallSubr:
@@ -163,7 +175,7 @@ namespace fontio { namespace logic { namespace type2
                 return false;
 
             case Type2OperatorType::HintMask:
-                throw std::logic_error("Not implemented");
+                context.EnableHints(this->GetMaskFromTop(argCount));
                 break;
 
             case Type2OperatorType::CntrMask:
@@ -181,11 +193,17 @@ namespace fontio { namespace logic { namespace type2
                 break;
 
             case Type2OperatorType::RCurveLine:
-                throw std::logic_error("Not implemented");
+                this->RrCurveTo(context);
+                this->RLineTo(context);
                 break;
 
             case Type2OperatorType::RLineCurve:
-                throw std::logic_error("Not implemented");
+                while (this->stack.size() >= 8)
+                {
+                    this->RLineTo(context);
+                }
+
+                this->RrCurveTo(context);
                 break;
 
             case Type2OperatorType::VVCurveTo:
@@ -402,6 +420,31 @@ namespace fontio { namespace logic { namespace type2
         std::vector<int> GetPacksFromBottom(size_t packSize)
         {
             return this->GetFromBottom((this->stack.size() / packSize) * packSize);
+        }
+
+        std::vector<bool> GetMaskFromTop(size_t bitCount)
+        {
+            std::vector<bool> result;
+
+            size_t i = 0;
+            while (i < bitCount)
+            {
+                auto top = this->stack.front();
+                this->stack.pop_front();
+
+                auto bitword = static_cast<uint32_t>(top.GetIntegerSafe());
+
+                for (size_t j = 0; (j < 32) && (i < bitCount); j++, i++)
+                {
+                    auto bit = bitword & 0x8000000;
+
+                    result.push_back(bit);
+
+                    bitword >>= 1;
+                }
+            }
+
+            return result;
         }
 
         Point2I ToPoint(const std::vector<int>& values)

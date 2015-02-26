@@ -3,13 +3,19 @@
 #include <cinttypes>
 #include <stdexcept>
 
+#include <fontio/infrastructure/ByteIo.hpp>
 #include <fontio/model/otf/IOtfTable.hpp>
+#include <fontio/model/otf/OtfPostTableVersion.hpp>
 
 namespace fontio { namespace model { namespace otf
 {
+    using namespace fontio::infrastructure;
+
     class OtfPostTable : public IOtfTable
     {
     private:
+
+        OtfPostTableVersion version;
 
         float italicAngle;
 
@@ -30,6 +36,7 @@ namespace fontio { namespace model { namespace otf
     public:
 
         OtfPostTable(
+            OtfPostTableVersion version,
             float italicAngle,
             uint16_t underlinePosition,
             uint16_t underlineThickness,
@@ -58,7 +65,15 @@ namespace fontio { namespace model { namespace otf
 
         virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
         {
-            throw std::logic_error("Not implemented");
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(this->version), crc);
+            WriteBytes<BigEndian>(out, static_cast<int32_t>(this->italicAngle * 65536), crc);
+            WriteBytes<BigEndian>(out, this->underlinePosition, crc);
+            WriteBytes<BigEndian>(out, this->underlineThickness, crc);
+            WriteBytes<BigEndian>(out, this->isFixedPitch, crc);
+            WriteBytes<BigEndian>(out, this->minMemType42, crc);
+            WriteBytes<BigEndian>(out, this->maxMemType42, crc);
+            WriteBytes<BigEndian>(out, this->minMemType1, crc);
+            WriteBytes<BigEndian>(out, this->maxMemType1, crc);
         }
 
         virtual uint32_t GetId() const override
