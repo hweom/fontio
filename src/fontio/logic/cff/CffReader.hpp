@@ -1,6 +1,6 @@
 #pragma once
 
-#include <istream>
+#include <fstream>
 
 #include <fontio/logic/type2/Type2CharstringReader.hpp>
 #include <fontio/model/cff/Cff.hpp>
@@ -17,6 +17,13 @@ namespace fontio { namespace logic { namespace cff
     class CffReader
     {
     public:
+
+        Cff ReadCff(const std::string& path)
+        {
+            std::ifstream stream(path, std::ios_base::binary);
+
+            return this->ReadCff(stream);
+        }
 
         Cff ReadCff(std::istream& stream)
         {

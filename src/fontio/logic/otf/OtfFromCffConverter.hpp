@@ -2,11 +2,13 @@
 
 #include <algorithm>
 
+#include <fontio/logic/cff/CffReader.hpp>
 #include <fontio/logic/type2/Type2GlyphMetricsCalculator.hpp>
 #include <fontio/model/AdobeGlyphList.hpp>
 #include <fontio/model/cff/Cff.hpp>
 #include <fontio/model/cff/CffType2Charstrings.hpp>
 #include <fontio/model/otf/Otf.hpp>
+#include <fontio/model/otf/OtfCffTable.hpp>
 #include <fontio/model/otf/OtfCmapTable.hpp>
 #include <fontio/model/otf/OtfHeadTable.hpp>
 #include <fontio/model/otf/OtfHheaTable.hpp>
@@ -19,6 +21,7 @@
 
 namespace fontio { namespace logic { namespace otf
 {
+    using namespace fontio::logic::cff;
     using namespace fontio::logic::type2;
     using namespace fontio::model;
     using namespace fontio::model::cff;
@@ -32,8 +35,10 @@ namespace fontio { namespace logic { namespace otf
 
     public:
 
-        std::unique_ptr<Otf> ConvertFromCff(const Cff& cff, size_t fontIndex = 0)
+        std::unique_ptr<Otf> ConvertFromCff(const std::string& cffFilename, size_t fontIndex = 0)
         {
+            auto cff = CffReader().ReadCff(cffFilename);
+
             const auto& topDict = cff.GetTopDicts()[fontIndex];
 
             auto glyphMetrics =this->CalculateGlyphMetrics(cff, topDict);
@@ -51,6 +56,7 @@ namespace fontio { namespace logic { namespace otf
             tables.push_back(this->ConvertNameTable(topDict));
             tables.push_back(this->ConvertOs2Table(topDict, glyphMetrics, cmapTable));
             tables.push_back(this->ConvertPostTable(topDict));
+            tables.push_back(std::unique_ptr<IOtfTable>(new OtfCffTable(cffFilename)));
 
             return std::unique_ptr<Otf>(new Otf(std::move(tables)));
         }

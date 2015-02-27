@@ -24,9 +24,7 @@ namespace fontio { namespace logic { namespace otf
 
         std::unique_ptr<Otf> ConvertFile(const std::string& filename)
         {
-            std::ifstream stream(filename, std::ios_base::binary);
-
-            return this->converter.ConvertFromCff(reader.ReadCff(stream));
+            return this->converter.ConvertFromCff(filename);
         }
     };
 

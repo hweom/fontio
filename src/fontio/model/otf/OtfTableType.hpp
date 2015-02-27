@@ -4,20 +4,24 @@ namespace fontio { namespace model { namespace otf
 {
     enum class OtfTableType
     {
-        Cmap = 1,
+        Invalid = 0,
 
-        Head = 2,
+        Cff,
 
-        Hhea = 3,
+        Cmap,
 
-        Hmtx = 4,
+        Head,
 
-        Maxp = 5,
+        Hhea,
 
-        Name = 6,
+        Hmtx,
 
-        Os2 = 7,
+        Maxp,
 
-        Post = 8
+        Name,
+
+        Os2,
+
+        Post
     };
 } } }
