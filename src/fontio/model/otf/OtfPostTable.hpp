@@ -45,7 +45,8 @@ namespace fontio { namespace model { namespace otf
             uint32_t maxMemType42,
             uint32_t minMemType1,
             uint32_t maxMemType1)
-            : italicAngle(italicAngle)
+            : version(version)
+            , italicAngle(italicAngle)
             , underlinePosition(underlinePosition)
             , underlineThickness(underlineThickness)
             , isFixedPitch(isFixedPitch)

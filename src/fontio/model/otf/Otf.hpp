@@ -52,11 +52,17 @@ namespace fontio { namespace model { namespace otf
 
             searchRange *= 16;
 
-            WriteBytes<BigEndian>(out, 0x00010000U);
+            out.write("OTTO", 4);
             WriteBytes<BigEndian>(out, static_cast<uint16_t>(this->tables.size()));
             WriteBytes<BigEndian>(out, searchRange);
             WriteBytes<BigEndian>(out, entrySelector);
             WriteBytes<BigEndian>(out, static_cast<uint16_t>(this->tables.size() * 16 - searchRange));
+
+            // Write placeholders for table headers.
+            for (size_t i = 0; i < this->tables.size() * 16; i++)
+            {
+                out.put(0);
+            }
         }
 
         void WriteTableRecords(std::ostream& out, std::ostream::pos_type fileStart, OtfTableCrc& globalCrc) const
@@ -95,6 +101,8 @@ namespace fontio { namespace model { namespace otf
                 tableIndex++;
 
                 globalCrc.Adjust(crc.GetCrc());
+
+                out.seekp(tableEnd);
             }
 
             if (globalCrcPos == 0)
@@ -117,7 +125,7 @@ namespace fontio { namespace model { namespace otf
         {
             out.seekp(globalCrcPos);
 
-            WriteBytes<BigEndian>(out, 0xB1B0AFBAUL - globalCrc);
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(0xB1B0AFBAUL - globalCrc));
         }
 
         void WriteTableIndices(

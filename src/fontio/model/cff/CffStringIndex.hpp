@@ -1,5 +1,6 @@
 #pragma once
 
+#include <fontio/model/AdobeGlyphList.hpp>
 #include <fontio/model/cff/CffIndex.hpp>
 
 namespace fontio { namespace model { namespace cff

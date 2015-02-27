@@ -77,7 +77,7 @@ namespace fontio { namespace model { namespace otf
             WriteBytes<BigEndian>(out, static_cast<uint16_t>(tableLength), crc);
             WriteBytes<BigEndian>(out, static_cast<uint16_t>(0), crc);
 
-            auto segCount = this->cmap.size();
+            auto segCount = this->cmap.size() + 1;
             auto searchRange = (1 << static_cast<unsigned>(log2(segCount))) * 2;
             auto entrySelector = static_cast<unsigned>(log2(segCount / 2));
             auto rangeShift = 2 * segCount - searchRange;
@@ -115,7 +115,7 @@ namespace fontio { namespace model { namespace otf
             for (const auto& pair : pairs)
             {
                 auto delta = static_cast<int16_t>(pair.first) - static_cast<int16_t>(pair.second);
-                WriteBytes<BigEndian>(out, delta, crc);
+                WriteBytes<BigEndian>(out, static_cast<int16_t>(delta), crc);
             }
 
             // Write 'idRangeOffset' array

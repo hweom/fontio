@@ -93,9 +93,9 @@ namespace fontio { namespace model { namespace otf
             WriteBytes<BigEndian>(out, this->macStyle, crc);
             WriteBytes<BigEndian>(out, this->lowestRecPpem, crc);
 
-            WriteBytes<BigEndian>(out, static_cast<int32_t>(2), crc);                  // Font direction hint.
-            WriteBytes<BigEndian>(out, static_cast<int32_t>(0), crc);                  // Index to loc format.
-            WriteBytes<BigEndian>(out, static_cast<int32_t>(0), crc);                  // Glyph data format.
+            WriteBytes<BigEndian>(out, static_cast<int16_t>(2), crc);                  // Font direction hint.
+            WriteBytes<BigEndian>(out, static_cast<int16_t>(0), crc);                  // Index to loc format.
+            WriteBytes<BigEndian>(out, static_cast<int16_t>(0), crc);                  // Glyph data format.
         }
 
         virtual uint32_t GetId() const override

@@ -53,7 +53,7 @@ namespace fontio { namespace model { namespace otf
 
         virtual uint32_t GetId() const override
         {
-            return 0x6d617864; // maxd
+            return 0x6d617870; // maxp
         }
     };
 } } }

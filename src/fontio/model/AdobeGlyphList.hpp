@@ -18,6 +18,11 @@ namespace fontio { namespace model
             return (pos == nameMap.end()) ? 0 : pos->second;
         }
 
+        size_t GetCount() const
+        {
+            return this->GetNameMap().size();
+        }
+
     private:
 
         static std::unordered_map<std::string, uint16_t>& GetNameMap()

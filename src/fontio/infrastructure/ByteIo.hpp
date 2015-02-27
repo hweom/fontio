@@ -19,13 +19,13 @@ namespace fontio { namespace infrastructure
         {
             void operator () (std::ostream& out, T value)
             {
-                static_assert(sizeof(T) != 0, "Not implemented");
+                static_assert(sizeof(T) == 0, "Not implemented");
             }
 
             template<typename F>
             void operator () (std::ostream& out, T value, F func)
             {
-                static_assert(sizeof(T) != 0, "Not implemented");
+                static_assert(sizeof(T) == 0, "Not implemented");
             }
         };
 
@@ -36,9 +36,9 @@ namespace fontio { namespace infrastructure
             {
                 for (size_t i = 0; i < sizeof(T); i++)
                 {
-                    out.put(*reinterpret_cast<const std::ostream::char_type*>(&value));
+                    auto byte = static_cast<uint8_t>((value >> ((sizeof(T) - i - 1) * 8)) & 0xff);
 
-                    value <<= 8;
+                    out.put(byte);
                 }
             }
 
@@ -47,13 +47,11 @@ namespace fontio { namespace infrastructure
             {
                 for (size_t i = 0; i < sizeof(T); i++)
                 {
-                    uint8_t byte = *reinterpret_cast<const uint8_t*>(&value);
+                    auto byte = static_cast<uint8_t>((value >> ((sizeof(T) - i - 1) * 8)) & 0xff);
 
                     func(byte);
 
                     out.put(static_cast<std::ostream::char_type>(byte));
-
-                    value <<= 8;
                 }
             }
         };
@@ -62,12 +60,12 @@ namespace fontio { namespace infrastructure
     template<typename Endianness, typename T>
     inline void WriteBytes(std::ostream& out, T value)
     {
-        return details::WriteBytesImpl<Endianness, T, void>()(out, value);
+        return details::WriteBytesImpl<Endianness, T>()(out, value);
     }
 
     template<typename Endianness, typename T, typename F>
     inline void WriteBytes(std::ostream& out, T value, F func)
     {
-        return details::WriteBytesImpl<Endianness, T, F>()(out, value, func);
+        return details::WriteBytesImpl<Endianness, T>()(out, value, func);
     }
 } }

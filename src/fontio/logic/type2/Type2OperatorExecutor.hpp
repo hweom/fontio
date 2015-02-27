@@ -179,7 +179,6 @@ namespace fontio { namespace logic { namespace type2
                 break;
 
             case Type2OperatorType::CntrMask:
-                throw std::logic_error("Not implemented");
                 break;
 
             case Type2OperatorType::RMoveTo:

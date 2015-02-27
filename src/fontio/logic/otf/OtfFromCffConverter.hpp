@@ -68,7 +68,10 @@ namespace fontio { namespace logic { namespace otf
                 auto charName = strings.GetString(pair.second);
                 auto unicode = glyphList.GetUnicode(charName);
 
-                cmap.push_back(std::make_pair(pair.first, unicode));
+                if (unicode > 0)
+                {
+                    cmap.push_back(std::make_pair(pair.first, unicode));
+                }
             }
 
             return std::unique_ptr<OtfCmapTable>(new OtfCmapTable(cmap));

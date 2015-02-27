@@ -240,7 +240,7 @@ namespace fontio { namespace logic { namespace cff
 
                     stream.seekg(start, std::ios_base::beg);
 
-                    std::cout << "\n\n\n" << i << ": ";
+//                    std::cout << "\n\n\n" << i << ": ";
 
                     charstrings.emplace_back(type2Reader.ReadType2Charstring(stream, end - start));
                 }
@@ -284,7 +284,7 @@ namespace fontio { namespace logic { namespace cff
                     auto sid = this->ReadBigEndian<uint16_t>(stream);
                     auto rangeLen = this->ReadBigEndian<uint8_t>(stream);
 
-                    for (size_t i = 0; i < rangeLen; i++)
+                    for (size_t i = 0; i <= rangeLen; i++)
                     {
                         gidToSid[gid++] = sid++;
                     }
