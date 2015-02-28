@@ -4,7 +4,9 @@
 
 #include <fontio/logic/type2/Type2CharstringReader.hpp>
 #include <fontio/model/cff/Cff.hpp>
+#include <fontio/model/cff/CffCustomCharset.hpp>
 #include <fontio/model/cff/CffDict.hpp>
+#include <fontio/model/cff/CffIsoAdobeCharset.hpp>
 #include <fontio/model/cff/CffPrivateDict.hpp>
 #include <fontio/model/cff/CffType2Charstrings.hpp>
 
@@ -157,9 +159,7 @@ namespace fontio { namespace logic { namespace cff
             }
 
             auto charsetOffset = dict.GetAsUint(CffOperatorType::Charset, 0);
-            auto charset = charstringsIndex.GetOffsets().size() > 0
-                ? this->LoadCharset(charsetOffset, stream, charstringsIndex.GetOffsets().size() - 1)
-                : std::unique_ptr<CffCharset>();
+            auto charset = this->LoadCharset(charsetOffset, stream, charstringsIndex.GetOffsets().size() - 1);
 
             auto version = this->GetDictString(dict, CffOperatorType::Version, strings);
             auto notice = this->GetDictString(dict, CffOperatorType::Notice, strings);
@@ -260,18 +260,28 @@ namespace fontio { namespace logic { namespace cff
             }
         }
 
-        std::unique_ptr<CffCharset> LoadCharset(uint32_t charsetOffset, std::istream& stream, size_t totalGlyphs)
+        std::unique_ptr<ICffCharset> LoadCharset(uint32_t charsetOffset, std::istream& stream, size_t totalGlyphs)
         {
-            if (charsetOffset > 3)
+            if (charsetOffset == 0)
+            {
+                return std::unique_ptr<ICffCharset>(new CffIsoAdobeCharset());
+            }
+            else if (charsetOffset == 1)
+            {
+                throw std::logic_error("Not implemented");
+            }
+            else if (charsetOffset == 2)
+            {
+                throw std::logic_error("Not implemented");
+            }
+            else
             {
                 stream.seekg(charsetOffset, std::ios_base::beg);
                 return this->LoadCharsetTable(stream, totalGlyphs);
             }
-
-            return std::unique_ptr<CffCharset>();
         }
 
-        std::unique_ptr<CffCharset> LoadCharsetTable(std::istream& stream, size_t totalGlyphs)
+        std::unique_ptr<ICffCharset> LoadCharsetTable(std::istream& stream, size_t totalGlyphs)
         {
             std::unordered_map<uint16_t, uint16_t> gidToSid;
 
@@ -306,7 +316,7 @@ namespace fontio { namespace logic { namespace cff
                 throw std::runtime_error("Unknown charset format");
             }
 
-            return std::unique_ptr<CffCharset>(new CffCharset(gidToSid));
+            return std::unique_ptr<ICffCharset>(new CffCustomCharset(gidToSid));
         }
 
         CffStringIndex ReadStringIndex(std::istream& stream, const CffIndex& index)

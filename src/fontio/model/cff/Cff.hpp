@@ -1,10 +1,10 @@
 #pragma once
 
-#include <fontio/model/cff/CffCharset.hpp>
 #include <fontio/model/cff/CffHeader.hpp>
 #include <fontio/model/cff/CffNameIndex.hpp>
 #include <fontio/model/cff/CffStringIndex.hpp>
 #include <fontio/model/cff/CffTopDict.hpp>
+#include <fontio/model/cff/ICffCharset.hpp>
 
 namespace fontio { namespace model { namespace cff
 {

@@ -5,7 +5,7 @@
 #include <vector>
 
 #include <fontio/model/BoundBox.hpp>
-#include <fontio/model/cff/CffCharset.hpp>
+#include <fontio/model/cff/ICffCharset.hpp>
 #include <fontio/model/cff/CffCharsetType.hpp>
 #include <fontio/model/cff/CffFontMatrix.hpp>
 #include <fontio/model/cff/CffOperatorType.hpp>
@@ -42,7 +42,7 @@ namespace fontio { namespace model { namespace cff
 
         std::unique_ptr<ICffCharstrings> charstrings;
 
-        std::unique_ptr<CffCharset> charset;
+        std::unique_ptr<ICffCharset> charset;
 
         std::unique_ptr<ICffCharstrings> localSubroutines;
 
@@ -60,7 +60,7 @@ namespace fontio { namespace model { namespace cff
             int32_t defaultWidthX,
             int32_t nominalWidthX,
             std::unique_ptr<ICffCharstrings>&& charstrings,
-            std::unique_ptr<CffCharset>&& charset,
+            std::unique_ptr<ICffCharset>&& charset,
             std::unique_ptr<ICffCharstrings>&& localSubroutines)
             : version(version)
             , notice(notice)
@@ -137,7 +137,7 @@ namespace fontio { namespace model { namespace cff
             return *this->charstrings;
         }
 
-        const CffCharset& GetCharset() const
+        const ICffCharset& GetCharset() const
         {
             assert (this->charset != nullptr);
 

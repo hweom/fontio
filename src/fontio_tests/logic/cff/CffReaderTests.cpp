@@ -91,4 +91,13 @@ namespace fontio { namespace logic { namespace cff
         ASSERT_EQ("bracketright", strings.GetString(charset[62]));
         ASSERT_EQ("sterling", strings.GetString(charset[98]));
     }
+
+    TEST_F(CffReaderTests, CanReadAnotherCff)
+    {
+        auto cff = this->ReadFile("test_data/cff/test_8.cff");
+
+        const auto& topDict = cff.GetTopDicts()[0];
+
+        topDict.GetCharset();
+    }
 } } }

@@ -37,7 +37,19 @@ namespace fontio { namespace logic { namespace otf
 
         std::unique_ptr<Otf> ConvertFromCff(const std::string& cffFilename, size_t fontIndex = 0)
         {
-            auto cff = CffReader().ReadCff(cffFilename);
+            std::ifstream stream(cffFilename, std::ios_base::binary);
+
+            return this->ConvertFromCff(stream, fontIndex);
+        }
+
+        std::unique_ptr<Otf> ConvertFromCff(std::istream& stream, size_t fontIndex = 0)
+        {
+            auto start = stream.tellg();
+
+            auto cff = CffReader().ReadCff(stream);
+
+            stream.seekg(start);
+            stream.clear();
 
             const auto& topDict = cff.GetTopDicts()[fontIndex];
 
@@ -56,7 +68,7 @@ namespace fontio { namespace logic { namespace otf
             tables.push_back(this->ConvertNameTable(topDict));
             tables.push_back(this->ConvertOs2Table(topDict, glyphMetrics, cmapTable));
             tables.push_back(this->ConvertPostTable(topDict));
-            tables.push_back(std::unique_ptr<IOtfTable>(new OtfCffTable(cffFilename)));
+            tables.push_back(std::unique_ptr<IOtfTable>(new OtfCffTable(stream)));
 
             return std::unique_ptr<Otf>(new Otf(std::move(tables)));
         }
@@ -335,7 +347,7 @@ namespace fontio { namespace logic { namespace otf
             }
             else
             {
-                throw std::runtime_error("Unknown weight");
+                return 400;
             }
         }
 

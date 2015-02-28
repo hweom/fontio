@@ -1,8 +1,9 @@
+#include <algorithm>
+
 #include <fontio/model/AdobeGlyphList.hpp>
 
 namespace fontio { namespace model
 {
-
     struct GlyphRecord
     {
         std::string name;
@@ -4308,7 +4309,10 @@ namespace fontio { namespace model
 
         for (auto item : glyphs)
         {
-            result[item.name] = item.unicode0;
+            auto lowercaseName = item.name;
+            std::transform(lowercaseName.begin(), lowercaseName.end(), lowercaseName.begin(), tolower);
+
+            result[lowercaseName] = item.unicode0;
         }
 
         return result;

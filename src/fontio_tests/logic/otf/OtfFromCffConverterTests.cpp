@@ -36,4 +36,13 @@ namespace fontio { namespace logic { namespace otf
 
         cff->Save(stream);
     }
+
+    TEST_F(OtfFromCffConverterTests, CanConvertAnotherCff)
+    {
+        auto cff = this->ConvertFile("test_data/cff/test_8.cff");
+
+        std::ofstream stream("test_8.otf", std::ios_base::binary);
+
+        cff->Save(stream);
+    }
 } } }

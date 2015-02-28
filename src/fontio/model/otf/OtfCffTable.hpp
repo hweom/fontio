@@ -19,14 +19,14 @@ namespace fontio { namespace model { namespace otf
 
     public:
 
-        OtfCffTable(const std::string& filename)
+        OtfCffTable(std::istream& stream)
         {
-            std::ifstream stream(filename, std::ios_base::binary);
+            auto start = stream.tellg();
 
             stream.seekg(0, std::ios_base::end);
-            auto filesize = static_cast<size_t>(stream.tellg());
+            auto filesize = static_cast<size_t>(stream.tellg() - start);
 
-            stream.seekg(0, std::ios_base::beg);
+            stream.seekg(start);
             stream.clear();
 
             this->cffData.resize(filesize);
