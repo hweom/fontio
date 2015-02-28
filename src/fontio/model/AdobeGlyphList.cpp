@@ -4309,10 +4309,7 @@ namespace fontio { namespace model
 
         for (auto item : glyphs)
         {
-            auto lowercaseName = item.name;
-            std::transform(lowercaseName.begin(), lowercaseName.end(), lowercaseName.begin(), tolower);
-
-            result[lowercaseName] = item.unicode0;
+            result[item.name] = item.unicode0;
         }
 
         return result;
