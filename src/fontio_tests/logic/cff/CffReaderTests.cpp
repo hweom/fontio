@@ -94,7 +94,7 @@ namespace fontio { namespace logic { namespace cff
 
     TEST_F(CffReaderTests, CanReadAnotherCff)
     {
-        auto cff = this->ReadFile("test_data/cff/test_8.cff");
+        auto cff = this->ReadFile("test_data/cff/test_font_8.cff");
 
         const auto& topDict = cff.GetTopDicts()[0];
 

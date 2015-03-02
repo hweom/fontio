@@ -397,10 +397,77 @@ namespace fontio { namespace logic { namespace cff
                     ((int32_t)b4);
                 return CffObject(number);
             }
+            else if (b0 == 30)
+            {
+                auto numberString = this->ReadFloatingNumberString(stream);
+                return CffObject(atof(numberString.c_str()));
+            }
             else
             {
                 throw std::runtime_error("Unknown value format");
             }
+        }
+
+        std::string ReadFloatingNumberString(std::istream& stream)
+        {
+            std::string number;
+
+            while (true)
+            {
+                uint8_t c = stream.get();
+
+                if (!this->ParseFloatingNibble(c >> 4, number) ||
+                    !this->ParseFloatingNibble(c & 0xF, number))
+                {
+                    break;
+                }
+            }
+
+            return number;
+        }
+
+        bool ParseFloatingNibble(uint8_t nibble, std::string& number)
+        {
+            switch (nibble)
+            {
+            case 0:
+            case 1:
+            case 2:
+            case 3:
+            case 4:
+            case 5:
+            case 6:
+            case 7:
+            case 8:
+            case 9:
+                number.push_back('0' + nibble);
+                break;
+
+            case 0xa:
+                number.push_back('.');
+                break;
+
+            case 0xb:
+                number.push_back('E');
+                break;
+
+            case 0xc:
+                number.push_back('E');
+                number.push_back('-');
+                break;
+
+            case 0xe:
+                number.push_back('-');
+                break;
+
+            case 0xf:
+                return false;
+
+            default:
+                break;
+            };
+
+            return true;
         }
 
         template<typename T>
