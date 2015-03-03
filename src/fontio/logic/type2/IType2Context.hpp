@@ -24,6 +24,6 @@ namespace fontio { namespace logic { namespace type2
 
         virtual void AddVerticalHint(int x0, int x1) = 0;
 
-        virtual void EnableHints(const std::vector<bool>& mask) = 0;
+        virtual void EnableHints(uint64_t mask) = 0;
     };
 } } }

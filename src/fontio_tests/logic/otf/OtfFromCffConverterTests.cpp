@@ -37,11 +37,20 @@ namespace fontio { namespace logic { namespace otf
         cff->Save(stream);
     }
 
-    TEST_F(OtfFromCffConverterTests, CanConvertAnotherCff)
+    TEST_F(OtfFromCffConverterTests, CanConvertCff6)
     {
-        auto cff = this->ConvertFile("test_data/cff/test_font_7.cff");
+        auto cff = this->ConvertFile("test_data/cff/test_font_6.cff");
 
-        std::ofstream stream("test_8.otf", std::ios_base::binary);
+        std::ofstream stream("test_font_6.otf", std::ios_base::binary);
+
+        cff->Save(stream);
+    }
+
+    TEST_F(OtfFromCffConverterTests, CanConvertCff31)
+    {
+        auto cff = this->ConvertFile("test_data/cff/test_font_31.cff");
+
+        std::ofstream stream("test_font_31.otf", std::ios_base::binary);
 
         cff->Save(stream);
     }

@@ -6,8 +6,9 @@
 
 namespace fontio { namespace model { namespace type2
 {
-    enum class Type2OperatorType : uint16_t
+    enum class Type2ObjectType
     {
+        Operand = 0,
         HStem = 0x0001,
         VStem = 0x0003,
         VMoveTo = 0x0004,
@@ -18,6 +19,7 @@ namespace fontio { namespace model { namespace type2
         CallSubr = 0x000a,
         Return = 0x000b,
         EndChar = 0x000e,
+        Blend = 0x0010,
         HStemHM = 0x0012,
         HintMask = 0x0013,
         CntrMask = 0x0014,
@@ -57,103 +59,103 @@ namespace fontio { namespace model { namespace type2
         Flex1 = 0x0c25,
     };
 
-    inline std::ostream& operator << (std::ostream& out, Type2OperatorType type)
+    inline std::ostream& operator << (std::ostream& out, Type2ObjectType type)
     {
         switch (type)
         {
-        case Type2OperatorType::HStem:
+        case Type2ObjectType::HStem:
             return out << "HStem";
-        case Type2OperatorType::VStem:
+        case Type2ObjectType::VStem:
             return out << "VStem";
-        case Type2OperatorType::VMoveTo:
+        case Type2ObjectType::VMoveTo:
             return out << "VMoveTo";
-        case Type2OperatorType::RLineTo:
+        case Type2ObjectType::RLineTo:
             return out << "RLineTo";
-        case Type2OperatorType::HLineTo:
+        case Type2ObjectType::HLineTo:
             return out << "hLineTo";
-        case Type2OperatorType::VLineTo:
+        case Type2ObjectType::VLineTo:
             return out << "VLineTo";
-        case Type2OperatorType::RRCurveTo:
+        case Type2ObjectType::RRCurveTo:
             return out << "RRCurveTo";
-        case Type2OperatorType::CallSubr:
+        case Type2ObjectType::CallSubr:
             return out << "CallSubr";
-        case Type2OperatorType::Return:
+        case Type2ObjectType::Return:
             return out << "Return";
-        case Type2OperatorType::EndChar:
+        case Type2ObjectType::EndChar:
             return out << "EndChar";
-        case Type2OperatorType::HStemHM:
+        case Type2ObjectType::HStemHM:
             return out << "HStemHM";
-        case Type2OperatorType::HintMask:
+        case Type2ObjectType::HintMask:
             return out << "HintMask";
-        case Type2OperatorType::CntrMask:
+        case Type2ObjectType::CntrMask:
             return out << "CntrMask";
-        case Type2OperatorType::RMoveTo:
+        case Type2ObjectType::RMoveTo:
             return out << "RMoveTo";
-        case Type2OperatorType::HMoveTo:
+        case Type2ObjectType::HMoveTo:
             return out << "HMoveTo";
-        case Type2OperatorType::VStemHM:
+        case Type2ObjectType::VStemHM:
             return out << "VStemHM";
-        case Type2OperatorType::RCurveLine:
+        case Type2ObjectType::RCurveLine:
             return out << "RCurveLine";
-        case Type2OperatorType::RLineCurve:
+        case Type2ObjectType::RLineCurve:
             return out << "RLineCurve";
-        case Type2OperatorType::VVCurveTo:
+        case Type2ObjectType::VVCurveTo:
             return out << "VVCurveTo";
-        case Type2OperatorType::HHCurveTo:
+        case Type2ObjectType::HHCurveTo:
             return out << "HHCurveTo";
-        case Type2OperatorType::CallGSubr:
+        case Type2ObjectType::CallGSubr:
             return out << "CallGSubr";
-        case Type2OperatorType::VHCurveTo:
+        case Type2ObjectType::VHCurveTo:
             return out << "VHCurveTo";
-        case Type2OperatorType::HVCurveTo:
+        case Type2ObjectType::HVCurveTo:
             return out << "HVCurveTo";
-        case Type2OperatorType::And:
+        case Type2ObjectType::And:
             return out << "And";
-        case Type2OperatorType::Or:
+        case Type2ObjectType::Or:
             return out << "Or";
-        case Type2OperatorType::Not:
+        case Type2ObjectType::Not:
             return out << "Not";
-        case Type2OperatorType::Abs:
+        case Type2ObjectType::Abs:
             return out << "Abs";
-        case Type2OperatorType::Add:
+        case Type2ObjectType::Add:
             return out << "Add";
-        case Type2OperatorType::Sub:
+        case Type2ObjectType::Sub:
             return out << "Sub";
-        case Type2OperatorType::Div:
+        case Type2ObjectType::Div:
             return out << "Div";
-        case Type2OperatorType::Neg:
+        case Type2ObjectType::Neg:
             return out << "Neg";
-        case Type2OperatorType::Eq:
+        case Type2ObjectType::Eq:
             return out << "Eq";
-        case Type2OperatorType::Drop:
+        case Type2ObjectType::Drop:
             return out << "Drop";
-        case Type2OperatorType::Put:
+        case Type2ObjectType::Put:
             return out << "Put";
-        case Type2OperatorType::Get:
+        case Type2ObjectType::Get:
             return out << "Get";
-        case Type2OperatorType::IfElse:
+        case Type2ObjectType::IfElse:
             return out << "IfElse";
-        case Type2OperatorType::Random:
+        case Type2ObjectType::Random:
             return out << "Random";
-        case Type2OperatorType::Mul:
+        case Type2ObjectType::Mul:
             return out << "Mul";
-        case Type2OperatorType::Sqrt:
+        case Type2ObjectType::Sqrt:
             return out << "Sqrt";
-        case Type2OperatorType::Dup:
+        case Type2ObjectType::Dup:
             return out << "Dup";
-        case Type2OperatorType::Exch:
+        case Type2ObjectType::Exch:
             return out << "Exch";
-        case Type2OperatorType::Index:
+        case Type2ObjectType::Index:
             return out << "Index";
-        case Type2OperatorType::Roll:
+        case Type2ObjectType::Roll:
             return out << "Roll";
-        case Type2OperatorType::HFlex:
+        case Type2ObjectType::HFlex:
             return out << "HFlex";
-        case Type2OperatorType::Flex:
+        case Type2ObjectType::Flex:
             return out << "Flex";
-        case Type2OperatorType::HFlex1:
+        case Type2ObjectType::HFlex1:
             return out << "HFlex1";
-        case Type2OperatorType::Flex1:
+        case Type2ObjectType::Flex1:
             return out << "Flex1";
         default:
             return out << "<???>";
@@ -164,9 +166,9 @@ namespace fontio { namespace model { namespace type2
 namespace std
 {
     template<>
-    struct hash<fontio::model::type2::Type2OperatorType>
+    struct hash<fontio::model::type2::Type2ObjectType>
     {
-        size_t operator () (fontio::model::type2::Type2OperatorType type) const
+        size_t operator () (fontio::model::type2::Type2ObjectType type) const
         {
             return (size_t)type;
         }

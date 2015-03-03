@@ -4,6 +4,7 @@
 #include <memory>
 #include <vector>
 
+#include <fontio/logic/type2/Type2CharstringReaderState.hpp>
 #include <fontio/model/type2/Type2Charstring.hpp>
 
 namespace fontio { namespace logic { namespace type2
@@ -14,159 +15,189 @@ namespace fontio { namespace logic { namespace type2
     {
     private:
 
-        int hintCount = 0;
+        Type2CharstringReaderState& state;
+
+        std::vector<uint8_t>::const_iterator cur;
+
+        std::vector<uint8_t>::const_iterator end;
 
     public:
 
-        Type2Charstring ReadType2Charstring(std::istream& stream, uint32_t length)
+        Type2CharstringReader(Type2CharstringReaderState& state, const Type2Charstring& charstring)
+            : state(state)
+            , cur(charstring.GetBytes().begin())
+            , end(charstring.GetBytes().end())
         {
-            std::vector<Type2Object> objects;
+        }
 
-            this->Reset();
+    public:
 
-            auto stackDepth = 0;
-
-            auto start = (uint32_t)stream.tellg();
-            while (((uint32_t)stream.tellg() - start) < length)
+        bool GetNextObject(Type2Object& object)
+        {
+            if (!this->ReadObject(object))
             {
-                auto object = this->ReadObject(stream);
-
-                if (object.IsOperator())
-                {
-                    if ((object.GetOperator() == Type2OperatorType::HStem) ||
-                        (object.GetOperator() == Type2OperatorType::VStem) ||
-                        (object.GetOperator() == Type2OperatorType::HStemHM) ||
-                        (object.GetOperator() == Type2OperatorType::VStemHM) ||
-                        (object.GetOperator() == Type2OperatorType::HintMask) ||
-                        (object.GetOperator() == Type2OperatorType::CntrMask))
-                    {
-                        this->hintCount += stackDepth / 2;
-                    }
-
-                    if ((object.GetOperator() == Type2OperatorType::HintMask) ||
-                        (object.GetOperator() == Type2OperatorType::CntrMask))
-                    {
-                        object = Type2Object(object.GetOperator(), this->hintCount);
-
-                        this->ReadMask(stream, objects, object.GetArgCount());
-                    }
-
-                    stackDepth = 0;
-                }
-                else
-                {
-                    stackDepth++;
-                }
-
-                // std::cout << "<" << object << "> ";
-
-                objects.push_back(object);
+                return false;
             }
 
-            return Type2Charstring(std::move(objects));
+            if (object.IsOperator())
+            {
+                if ((object.GetType() == Type2ObjectType::HStem) ||
+                    (object.GetType() == Type2ObjectType::VStem) ||
+                    (object.GetType() == Type2ObjectType::HStemHM) ||
+                    (object.GetType() == Type2ObjectType::VStemHM) ||
+                    (object.GetType() == Type2ObjectType::HintMask) ||
+                    (object.GetType() == Type2ObjectType::CntrMask))
+                {
+                    this->state.AddHintCount(this->state.GetStackDepth() / 2);
+                }
+
+                if ((object.GetType() == Type2ObjectType::HintMask) ||
+                    (object.GetType() == Type2ObjectType::CntrMask))
+                {
+                    object = Type2Object(object.GetType(), this->ReadMask(this->state.GetHintCount()));
+                }
+
+                this->state.ChangeStackDepth(object.GetOperatorStackChange());
+            }
+            else
+            {
+                this->state.IncrementStackDepth();
+            }
+
+            return true;
         }
 
     private:
 
-        void Reset()
+        uint64_t ReadMask(size_t bitCount)
         {
-            this->hintCount = 0;
-        }
-
-        void ReadMask(std::istream& stream, std::vector<Type2Object>& objects, uint16_t bitCount)
-        {
-            uint32_t word = 0;
-            int byteIndex = 0;
-
+            uint64_t mask = 0;
             for (uint16_t i = 0; i < bitCount; i += 8)
             {
-                auto byte = (uint8_t)stream.get();
-
-                // std::cout << std::hex << (uint32_t)byte << " ";
-
-                word = word | ((uint32_t)byte << (3 - byteIndex) * 8);
-
-                if (byteIndex == 3)
+                if (this->IsAtEnd())
                 {
-                    // std::cout << "<" << word << "> ";
+                    return mask;
+                }
 
-                    objects.push_back(Type2Object(word));
-                    word = 0;
-                    byteIndex = 0;
-                }
-                else
-                {
-                    byteIndex++;
-                }
+                auto byte = *this->cur++;
+
+                mask = (mask >> 8) | ((uint64_t)byte << 56);
             }
 
-            if (byteIndex > 0)
-            {
-                // std::cout << "<" << word << "> ";
-
-                objects.push_back(Type2Object(word));
-            }
+            return mask;
         }
 
-        Type2Object ReadObject(std::istream& stream)
+        bool ReadObject(Type2Object& object)
         {
-            auto b0 = (uint8_t)stream.get();
+            if (this->IsAtEnd())
+            {
+                return false;
+            }
 
-            // std::cout << std::hex << (uint32_t)b0 << " ";
+            auto b0 = *this->cur++;
 
             if (this->IsOneByteOperator(b0))
             {
-                auto operatorType = (Type2OperatorType)b0;
-                return Type2Object(operatorType);
+                auto operatorType = (Type2ObjectType)b0;
+                object = Type2Object(operatorType);
             }
             else if (this->IsTwoByteOperator(b0))
             {
-                auto b1 = (uint8_t)stream.get();
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b1 = *this->cur++;
 
                 // std::cout << std::hex << (uint32_t)b1 << " ";
 
-                auto operatorType = (Type2OperatorType)(((uint16_t)b0 << 8) | b1);
-                return Type2Object(operatorType);
+                auto operatorType = (Type2ObjectType)(((uint16_t)b0 << 8) | b1);
+                object = Type2Object(operatorType);
             }
             else if ((b0 >= 32) && (b0 <= 246))
             {
                 auto number = (int32_t)b0 - 139;
-                return Type2Object(number);
+                object = Type2Object(number);
             }
             else if ((b0 >= 247) && (b0 <= 250))
             {
-                auto b1 = (uint8_t)stream.get();
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b1 = *this->cur++;
 
                 // std::cout << std::hex << (uint32_t)b1 << " ";
 
                 auto number = ((int32_t)b0 - 247) * 256 + b1 + 108;
-                return Type2Object(number);
+                object = Type2Object(number);
             }
             else if ((b0 >= 251) && (b0 <= 254))
             {
-                auto b1 = (uint8_t)stream.get();
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b1 = *this->cur++;
 
                 // std::cout << std::hex << (uint32_t)b1 << " ";
 
                 auto number = -((int32_t)b0 - 251) * 256 - b1 - 108;
-                return Type2Object(number);
+                object = Type2Object(number);
             }
             else if (b0 == 28)
             {
-                auto b1 = (uint8_t)stream.get();
-                auto b2 = (uint8_t)stream.get();
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b1 = *this->cur++;
+
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b2 = *this->cur++;
 
                 // std::cout << (uint32_t)b1 << " " << (uint32_t)b2 << " ";
 
                 auto number = ((int32_t)b1 << 8) | b2;
-                return Type2Object(number);
+                object = Type2Object(number);
             }
             else if (b0 == 255)
             {
-                auto b1 = (uint8_t)stream.get();
-                auto b2 = (uint8_t)stream.get();
-                auto b3 = (uint8_t)stream.get();
-                auto b4 = (uint8_t)stream.get();
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b1 = *this->cur++;
+
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b2 = *this->cur++;
+
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b3 = *this->cur++;
+
+                if (this->IsAtEnd())
+                {
+                    return false;
+                }
+
+                auto b4 = *this->cur++;
 
                 // std::cout << std::hex << (uint32_t)b1 << " " << (uint32_t)b2 << " "<< (uint32_t)b3 << " "<< (uint32_t)b4 << " ";
 
@@ -175,12 +206,15 @@ namespace fontio { namespace logic { namespace type2
                     ((int32_t)b2 << 16) |
                     ((int32_t)b3 << 8) |
                     ((int32_t)b4);
-                return Type2Object(number);
+
+                object = Type2Object(number);
             }
             else
             {
                 throw std::runtime_error("Unknown value format");
             }
+
+            return true;
         }
 
         bool IsTwoByteOperator(uint8_t byte)
@@ -194,6 +228,11 @@ namespace fontio { namespace logic { namespace type2
                 (byte < 12) ||
                 (byte > 12) && (byte < 28) ||
                 (byte > 28) && (byte < 32);
+        }
+
+        bool IsAtEnd() const
+        {
+            return this->cur == this->end;
         }
     };
 } } }

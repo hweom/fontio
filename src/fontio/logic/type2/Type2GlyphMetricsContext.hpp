@@ -129,6 +129,11 @@ namespace fontio { namespace logic { namespace type2
         {
             if (fabs(a) < 0.00001f)
             {
+                if (fabs(b) < 0.00001f)
+                {
+                    return {};
+                }
+
                 return { static_cast<float>(-c / b) };
             }
 
@@ -158,7 +163,7 @@ namespace fontio { namespace logic { namespace type2
         {
         }
 
-        virtual void EnableHints(const std::vector<bool>& mask) override
+        virtual void EnableHints(uint64_t mask) override
         {
         }
     };

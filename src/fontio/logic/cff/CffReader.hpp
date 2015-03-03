@@ -155,7 +155,7 @@ namespace fontio { namespace logic { namespace cff
             if (privateDict.GetSubrsOffset() > 0)
             {
                 auto localSubroutineIndex = this->ReadIndex(stream, privateDict.GetSubrsOffset());
-                localSubroutines = this->ReadGlobalSubroutines(stream, localSubroutineIndex);
+                localSubroutines = this->ReadCharstrings(stream, localSubroutineIndex, charstringsFormat);
             }
 
             auto charsetOffset = dict.GetAsUint(CffOperatorType::Charset, 0);
@@ -236,8 +236,6 @@ namespace fontio { namespace logic { namespace cff
         {
             if (format == CffCharstringFormat::Type2)
             {
-                Type2CharstringReader type2Reader;
-
                 std::vector<Type2Charstring> charstrings;
 
                 for (size_t i = 0; i < index.GetOffsets().size() - 1; i++)
@@ -247,9 +245,11 @@ namespace fontio { namespace logic { namespace cff
 
                     stream.seekg(start, std::ios_base::beg);
 
-//                    std::cout << "\n\n\n" << i << ": ";
+                    std::vector<uint8_t> bytes(end - start, 0);
 
-                    charstrings.emplace_back(type2Reader.ReadType2Charstring(stream, end - start));
+                    stream.read(reinterpret_cast<char*>(bytes.data()), end - start);
+
+                    charstrings.emplace_back(std::move(bytes));
                 }
 
                 return std::unique_ptr<ICffCharstrings>(new CffType2Charstrings(std::move(charstrings)));
@@ -293,23 +293,21 @@ namespace fontio { namespace logic { namespace cff
             {
                 throw std::logic_error("Not implemented");
             }
-            else if (format == 1)
+            else if ((format == 1) || (format == 2))
             {
                 size_t gid = 1;
                 while (gid < totalGlyphs)
                 {
                     auto sid = this->ReadBigEndian<uint16_t>(stream);
-                    auto rangeLen = this->ReadBigEndian<uint8_t>(stream);
+                    auto rangeLen = (format == 1)
+                        ? this->ReadBigEndian<uint8_t>(stream)
+                        : this->ReadBigEndian<uint16_t>(stream);
 
                     for (size_t i = 0; i <= rangeLen; i++)
                     {
                         gidToSid[gid++] = sid++;
                     }
                 }
-            }
-            else if (format == 2)
-            {
-                throw std::logic_error("Not implemented");
             }
             else
             {
@@ -340,8 +338,9 @@ namespace fontio { namespace logic { namespace cff
             return CffStringIndex(strings);
         }
 
-        std::unique_ptr<ICffCharstrings> ReadGlobalSubroutines(std::istream& stream, const CffIndex& index)
+        std::unique_ptr<ICffCharstrings> ReadSubroutines(std::istream& stream, const CffIndex& index)
         {
+
             throw std::logic_error("Not implemented");
         }
 

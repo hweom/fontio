@@ -1,10 +1,12 @@
 #pragma once
 
 #include <deque>
+#include <sstream>
 #include <vector>
 #include <unordered_set>
 
 #include <fontio/logic/type2/IType2Context.hpp>
+#include <fontio/logic/type2/Type2CharstringReader.hpp>
 #include <fontio/logic/type2/Type2SubroutineAccessor.hpp>
 #include <fontio/model/GlyphMetrics.hpp>
 #include <fontio/model/type2/Type2Charstring.hpp>
@@ -18,6 +20,12 @@ namespace fontio { namespace logic { namespace type2
     {
     private:
 
+        Type2CharstringReaderState charstringState;
+
+        Type2SubroutineAccessor localSubroutines;
+
+        Type2SubroutineAccessor globalSubroutines;
+
         std::deque<Type2Object> stack;
 
         bool widthParsed = false;
@@ -27,6 +35,10 @@ namespace fontio { namespace logic { namespace type2
         int defaultWidth;
 
         Point2I currentPoint = Point2I(0, 0);
+
+#ifdef DEBUG
+        std::ostringstream debugStream;
+#endif
 
     public:
 
@@ -44,39 +56,80 @@ namespace fontio { namespace logic { namespace type2
             int nominalWidth,
             int defaultWidth)
         {
-            this->Reset(nominalWidth, defaultWidth);
+            this->Reset(localSubroutines, globalSubroutines, nominalWidth, defaultWidth);
 
-            for (const auto& object : charstring.GetObjects())
+#ifdef DEBUG
+            try
             {
-                if (!this->ExecuteObject(context, object))
-                {
-                    return;
-                }
+                this->ExecuteCharstring(context, charstring);
             }
+            catch(std::runtime_error& ex)
+            {
+                throw std::runtime_error(std::string("Error: ") + ex.what() + "\n" + this->debugStream.str());
+            }
+#else
+            this->ExecuteCharstring(context, charstring);
+#endif
         }
 
     private:
 
-        void Reset(int nominalWidth, int defaultWidth)
+        void Reset(const Type2SubroutineAccessor& localSubroutines,
+            const Type2SubroutineAccessor& globalSubroutines,
+            int nominalWidth,
+            int defaultWidth)
         {
+            this->localSubroutines = localSubroutines;
+            this->globalSubroutines = globalSubroutines;
             this->nominalWidth = nominalWidth;
             this->defaultWidth = defaultWidth;
 
             this->stack.clear();
             this->widthParsed = false;
             this->currentPoint = Point2I(0, 0);
+
+            this->charstringState.Reset();
+
+#ifdef DEBUG
+            this->debugStream.clear();
+#endif
+        }
+
+        void ExecuteCharstring(IType2Context& context, const Type2Charstring& charstring)
+        {
+            Type2CharstringReader reader(this->charstringState, charstring);
+            Type2Object object;
+            size_t idx= 0;
+
+            while (reader.GetNextObject(object))
+            {
+                if (!this->ExecuteObject(context, object))
+                {
+                    return;
+                }
+
+                idx++;
+            }
         }
 
         bool ExecuteObject(IType2Context& context, const Type2Object& object)
         {
             if (object.IsOperand())
             {
+#ifdef DEBUG
+                this->debugStream << object.GetIntegerSafe() << " ";
+#endif
+
                 this->stack.push_front(object);
                 return true;
             }
             else
             {
-                return this->ExecuteOperator(context, object.GetOperator(), object.GetArgCount(), object.IsStackClearingOperator());
+#ifdef DEBUG
+                this->debugStream << object << std::endl;
+#endif
+
+                return this->ExecuteOperator(context, object.GetType(), object.IsStackClearingOperator(), object.GetBitmask());
             }
         }
 
@@ -101,13 +154,27 @@ namespace fontio { namespace logic { namespace type2
             }
         }
 
-        bool ExecuteOperator(IType2Context& context, Type2OperatorType op, uint16_t argCount, bool stackClearing)
+        bool ExecuteOperator(IType2Context& context, Type2ObjectType op, bool stackClearing, uint64_t mask)
         {
             int hintPos = 0;
 
             if (!this->widthParsed && stackClearing)
             {
-                if (!this->stack.empty())
+                // This operators require 1 argument
+                if ((op == Type2ObjectType::HMoveTo) ||
+                    (op == Type2ObjectType::VMoveTo))
+                {
+                    if (this->stack.size() > 1)
+                    {
+                        context.SetWidth(this->nominalWidth + this->GetFromBottom(1)[0]);
+                    }
+                    else
+                    {
+                        context.SetWidth(this->defaultWidth);
+                    }
+                }
+                // Other operators, allowed to be first, take even number of arguments.
+                else if ((this->stack.size() & 0x1) == 1)
                 {
                     context.SetWidth(this->nominalWidth + this->GetFromBottom(1)[0]);
                 }
@@ -121,8 +188,8 @@ namespace fontio { namespace logic { namespace type2
 
             switch (op)
             {
-            case Type2OperatorType::HStem:
-            case Type2OperatorType::HStemHM:
+            case Type2ObjectType::HStem:
+            case Type2ObjectType::HStemHM:
                 for (const auto& pair : this->ToTuples<2>(this->GetPacksFromBottom(2)))
                 {
                     hintPos += pair[0];
@@ -132,8 +199,8 @@ namespace fontio { namespace logic { namespace type2
 
                 break;
 
-            case Type2OperatorType::VStem:
-            case Type2OperatorType::VStemHM:
+            case Type2ObjectType::VStem:
+            case Type2ObjectType::VStemHM:
                 for (const auto& pair : this->ToTuples<2>(this->GetPacksFromBottom(2)))
                 {
                     hintPos += pair[0];
@@ -143,60 +210,57 @@ namespace fontio { namespace logic { namespace type2
 
                 break;
 
-            case Type2OperatorType::VMoveTo:
+            case Type2ObjectType::VMoveTo:
                 this->currentPoint += Point2I(0, this->GetFromBottom(1)[0]);
                 context.MoveTo(this->currentPoint);
 
-            case Type2OperatorType::RLineTo:
+            case Type2ObjectType::RLineTo:
                 this->RLineTo(context);
                 break;
 
-            case Type2OperatorType::HLineTo:
+            case Type2ObjectType::HLineTo:
                 this->LineLadder(context, true);
                 break;
 
-            case Type2OperatorType::VLineTo:
+            case Type2ObjectType::VLineTo:
                 this->LineLadder(context, false);
                 break;
 
-            case Type2OperatorType::RRCurveTo:
+            case Type2ObjectType::RRCurveTo:
                 this->RrCurveTo(context);
                 break;
 
-            case Type2OperatorType::CallSubr:
-                throw std::logic_error("Not implemented");
+            case Type2ObjectType::CallSubr:
+                this->CallSubroutine(context, this->localSubroutines);
                 break;
 
-            case Type2OperatorType::Return:
-                throw std::logic_error("Not implemented");
-                break;
-
-            case Type2OperatorType::EndChar:
+            case Type2ObjectType::Return:
+            case Type2ObjectType::EndChar:
                 return false;
 
-            case Type2OperatorType::HintMask:
-                context.EnableHints(this->GetMaskFromTop(argCount));
+            case Type2ObjectType::HintMask:
+                context.EnableHints(mask);
                 break;
 
-            case Type2OperatorType::CntrMask:
+            case Type2ObjectType::CntrMask:
                 break;
 
-            case Type2OperatorType::RMoveTo:
+            case Type2ObjectType::RMoveTo:
                 this->currentPoint += this->ToPoint(this->GetFromBottom(2));
                 context.MoveTo(this->currentPoint);
                 break;
 
-            case Type2OperatorType::HMoveTo:
+            case Type2ObjectType::HMoveTo:
                 this->currentPoint += Point2I(this->GetFromBottom(1)[0], 0);
                 context.MoveTo(this->currentPoint);
                 break;
 
-            case Type2OperatorType::RCurveLine:
+            case Type2ObjectType::RCurveLine:
                 this->RrCurveTo(context);
                 this->RLineTo(context);
                 break;
 
-            case Type2OperatorType::RLineCurve:
+            case Type2ObjectType::RLineCurve:
                 while (this->stack.size() >= 8)
                 {
                     this->RLineTo(context);
@@ -205,119 +269,122 @@ namespace fontio { namespace logic { namespace type2
                 this->RrCurveTo(context);
                 break;
 
-            case Type2OperatorType::VVCurveTo:
+            case Type2ObjectType::VVCurveTo:
                 this->CurveSequence(context, false);
                 break;
 
-            case Type2OperatorType::HHCurveTo:
+            case Type2ObjectType::HHCurveTo:
                 this->CurveSequence(context, true);
                 break;
 
-            case Type2OperatorType::CallGSubr:
-                throw std::logic_error("Not implemented");
+            case Type2ObjectType::CallGSubr:
+                this->CallSubroutine(context, this->globalSubroutines);
                 break;
 
-            case Type2OperatorType::VHCurveTo:
+            case Type2ObjectType::VHCurveTo:
                 this->CurveLadder(context, false);
                 break;
 
-            case Type2OperatorType::HVCurveTo:
+            case Type2ObjectType::HVCurveTo:
                 this->CurveLadder(context, true);
                 break;
 
-            case Type2OperatorType::And:
+            case Type2ObjectType::And:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Or:
+            case Type2ObjectType::Or:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Not:
+            case Type2ObjectType::Not:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Abs:
+            case Type2ObjectType::Abs:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Add:
+            case Type2ObjectType::Add:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Sub:
+            case Type2ObjectType::Sub:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Div:
+            case Type2ObjectType::Div:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Neg:
+            case Type2ObjectType::Neg:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Eq:
+            case Type2ObjectType::Eq:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Drop:
+            case Type2ObjectType::Drop:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Put:
+            case Type2ObjectType::Put:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Get:
+            case Type2ObjectType::Get:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::IfElse:
+            case Type2ObjectType::IfElse:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Random:
+            case Type2ObjectType::Random:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Mul:
+            case Type2ObjectType::Mul:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Sqrt:
+            case Type2ObjectType::Sqrt:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Dup:
+            case Type2ObjectType::Dup:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Exch:
+            case Type2ObjectType::Exch:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Index:
+            case Type2ObjectType::Index:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Roll:
+            case Type2ObjectType::Roll:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::HFlex:
+            case Type2ObjectType::HFlex:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Flex:
+            case Type2ObjectType::Flex:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::HFlex1:
+            case Type2ObjectType::HFlex1:
                 throw std::logic_error("Not implemented");
                 break;
 
-            case Type2OperatorType::Flex1:
+            case Type2ObjectType::Flex1:
+                break;
+
+            case Type2ObjectType::Blend:
                 break;
 
             default:
@@ -330,6 +397,19 @@ namespace fontio { namespace logic { namespace type2
             }
 
             return true;
+        }
+
+        void CallSubroutine(IType2Context& context, const Type2SubroutineAccessor& accessor)
+        {
+            if (this->stack.size() == 0)
+            {
+                throw std::runtime_error("Missing subroutine index");
+            }
+
+            auto index = this->stack.front().GetIntegerSafe();
+            this->stack.pop_front();
+
+            this->ExecuteCharstring(context, accessor[index]);
         }
 
         void LineLadder(IType2Context& context, bool dir)
@@ -419,31 +499,6 @@ namespace fontio { namespace logic { namespace type2
         std::vector<int> GetPacksFromBottom(size_t packSize)
         {
             return this->GetFromBottom((this->stack.size() / packSize) * packSize);
-        }
-
-        std::vector<bool> GetMaskFromTop(size_t bitCount)
-        {
-            std::vector<bool> result;
-
-            size_t i = 0;
-            while (i < bitCount)
-            {
-                auto top = this->stack.front();
-                this->stack.pop_front();
-
-                auto bitword = static_cast<uint32_t>(top.GetIntegerSafe());
-
-                for (size_t j = 0; (j < 32) && (i < bitCount); j++, i++)
-                {
-                    auto bit = bitword & 0x8000000;
-
-                    result.push_back(bit);
-
-                    bitword >>= 1;
-                }
-            }
-
-            return result;
         }
 
         Point2I ToPoint(const std::vector<int>& values)

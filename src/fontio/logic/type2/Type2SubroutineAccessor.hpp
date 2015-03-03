@@ -27,9 +27,47 @@ namespace fontio { namespace logic { namespace type2
 
     public:
 
-        const Type2Charstring& operator [] (size_t index)
+        const Type2Charstring& operator [] (int index) const
         {
-            throw std::logic_error("Not implemented");
+            if (this->subroutines == nullptr)
+            {
+                throw std::runtime_error("No subroutines");
+            }
+
+            auto unbiased = this->UnbiasIndex(index);
+            if ((unbiased < 0) || (unbiased >= this->subroutines->size()))
+            {
+                throw std::runtime_error("Index out of range");
+            }
+
+            return this->subroutines->at(static_cast<size_t>(unbiased));
+        }
+
+    private:
+
+        int UnbiasIndex(int index) const
+        {
+            return this->GetBias() + index;
+        }
+
+        int GetBias() const
+        {
+            if (this->subroutines == nullptr)
+            {
+                return 0;
+            }
+            else if (this->subroutines->size() < 1240)
+            {
+                return 107;
+            }
+            else if (this->subroutines->size() < 33900)
+            {
+                return 1131;
+            }
+            else
+            {
+                return 32768;
+            }
         }
     };
 } } }
