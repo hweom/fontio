@@ -37,11 +37,18 @@ namespace fontio { namespace model
         {
             this->x += p.x;
             this->y += p.y;
+
+            return *this;
         }
 
         inline friend Point2<T> operator + (const Point2<T>& p1, const Point2<T>& p2)
         {
             return Point2<T>(p1.x + p2.x, p1.y + p2.y);
+        }
+
+        inline friend Point2<T> operator - (const Point2<T>& p1, const Point2<T>& p2)
+        {
+            return Point2<T>(p1.x - p2.x, p1.y - p2.y);
         }
     };
 

@@ -26,7 +26,7 @@ namespace fontio { namespace logic { namespace type2
 
         Type2SubroutineAccessor globalSubroutines;
 
-        std::deque<Type2Object> stack;
+        std::deque<int> stack;
 
         bool widthParsed = false;
 
@@ -120,7 +120,7 @@ namespace fontio { namespace logic { namespace type2
                 this->debugStream << object.GetIntegerSafe() << " ";
 #endif
 
-                this->stack.push_front(object);
+                this->stack.push_front(object.GetIntegerSafe());
                 return true;
             }
             else
@@ -370,18 +370,19 @@ namespace fontio { namespace logic { namespace type2
                 break;
 
             case Type2ObjectType::HFlex:
-                throw std::logic_error("Not implemented");
+                this->HFlex(context);
                 break;
 
             case Type2ObjectType::Flex:
-                throw std::logic_error("Not implemented");
+                this->Flex(context);
                 break;
 
             case Type2ObjectType::HFlex1:
-                throw std::logic_error("Not implemented");
+                this->HFlex1(context);
                 break;
 
             case Type2ObjectType::Flex1:
+                this->Flex1(context);
                 break;
 
             case Type2ObjectType::Blend:
@@ -406,7 +407,7 @@ namespace fontio { namespace logic { namespace type2
                 throw std::runtime_error("Missing subroutine index");
             }
 
-            auto index = this->stack.front().GetIntegerSafe();
+            auto index = this->stack.front();
             this->stack.pop_front();
 
             this->ExecuteCharstring(context, accessor[index]);
@@ -474,6 +475,138 @@ namespace fontio { namespace logic { namespace type2
             }
         }
 
+        void Flex(IType2Context& context)
+        {
+            while (this->stack.size() >= 13)
+            {
+                auto pos = this->stack.rbegin();
+
+                auto dx1 = *pos++;
+                auto dy1 = *pos++;
+                auto dx2 = *pos++;
+                auto dy2 = *pos++;
+                auto dx3 = *pos++;
+                auto dy3 = *pos++;
+                auto dx4 = *pos++;
+                auto dy4 = *pos++;
+                auto dx5 = *pos++;
+                auto dy5 = *pos++;
+                auto dx6 = *pos++;
+                auto dy6 = *pos++;
+                auto fd = *pos++;
+
+                this->stack.erase(pos.base(), this->stack.end());
+
+                auto p0 = this->currentPoint += Point2I(dx1, dy1);
+                auto p1 = this->currentPoint += Point2I(dx2, dy2);
+                auto p2 = this->currentPoint += Point2I(dx3, dy3);
+                auto p3 = this->currentPoint += Point2I(dx4, dy4);
+                auto p4 = this->currentPoint += Point2I(dx5, dy5);
+                auto p5 = this->currentPoint += Point2I(dx6, dy6);
+
+                context.BezierTo(p0, p1, p2);
+                context.BezierTo(p3, p4, p5);
+            }
+        }
+
+        void HFlex(IType2Context& context)
+        {
+            while (this->stack.size() >= 7)
+            {
+                auto pos = this->stack.rbegin();
+
+                auto dx1 = *pos++;
+                auto dx2 = *pos++;
+                auto dy2 = *pos++;
+                auto dx3 = *pos++;
+                auto dx4 = *pos++;
+                auto dx5 = *pos++;
+                auto dx6 = *pos++;
+
+                this->stack.erase(pos.base(), this->stack.end());
+
+                auto p0 = this->currentPoint += Point2I(dx1, 0);
+                auto p1 = this->currentPoint += Point2I(dx2, dy2);
+                auto p2 = this->currentPoint += Point2I(dx3, 0);
+                auto p3 = this->currentPoint += Point2I(dx4, 0);
+                auto p4 = this->currentPoint += Point2I(dx5, 0);
+                auto p5 = this->currentPoint += Point2I(dx6, 0);
+
+                context.BezierTo(p0, p1, p2);
+                context.BezierTo(p3, p4, p5);
+            }
+        }
+
+        void Flex1(IType2Context& context)
+        {
+            while (this->stack.size() >= 11)
+            {
+                auto pos = this->stack.rbegin();
+
+                auto dx1 = *pos++;
+                auto dy1 = *pos++;
+                auto dx2 = *pos++;
+                auto dy2 = *pos++;
+                auto dx3 = *pos++;
+                auto dy3 = *pos++;
+                auto dx4 = *pos++;
+                auto dy4 = *pos++;
+                auto dx5 = *pos++;
+                auto dy5 = *pos++;
+                auto d6 = *pos++;
+
+                this->stack.erase(pos.base(), this->stack.end());
+
+                auto start = this->currentPoint;
+
+                auto p0 = this->currentPoint += Point2I(dx1, dy1);
+                auto p1 = this->currentPoint += Point2I(dx2, dy2);
+                auto p2 = this->currentPoint += Point2I(dx3, dy3);
+                auto p3 = this->currentPoint += Point2I(dx4, dy4);
+                auto p4 = this->currentPoint += Point2I(dx5, dy5);
+
+                auto delta = this->currentPoint - start;
+
+                auto dx6 = abs(delta.GetX()) > abs(delta.GetY()) ? d6 : 0;
+                auto dy6 = abs(delta.GetX()) > abs(delta.GetY()) ? 0 : d6;
+
+                auto p5 = this->currentPoint += Point2I(dx6, dy6);
+
+                context.BezierTo(p0, p1, p2);
+                context.BezierTo(p3, p4, p5);
+            }
+        }
+
+        void HFlex1(IType2Context& context)
+        {
+            while (this->stack.size() >= 9)
+            {
+                auto pos = this->stack.rbegin();
+
+                auto dx1 = *pos++;
+                auto dy1 = *pos++;
+                auto dx2 = *pos++;
+                auto dy2 = *pos++;
+                auto dx3 = *pos++;
+                auto dx4 = *pos++;
+                auto dx5 = *pos++;
+                auto dy5 = *pos++;
+                auto dx6 = *pos++;
+
+                this->stack.erase(pos.base(), this->stack.end());
+
+                auto p0 = this->currentPoint += Point2I(dx1, dy1);
+                auto p1 = this->currentPoint += Point2I(dx2, dy2);
+                auto p2 = this->currentPoint += Point2I(dx3, 0);
+                auto p3 = this->currentPoint += Point2I(dx4, 0);
+                auto p4 = this->currentPoint += Point2I(dx5, dy5);
+                auto p5 = this->currentPoint += Point2I(dx6, 0);
+
+                context.BezierTo(p0, p1, p2);
+                context.BezierTo(p3, p4, p5);
+            }
+        }
+
         std::vector<int> GetFromBottom(size_t n)
         {
             if (this->stack.size() < n)
@@ -484,7 +617,7 @@ namespace fontio { namespace logic { namespace type2
             std::vector<int> result(n);
             for (size_t i = 0; i < n; i++)
             {
-                result[i] = this->stack.back().GetIntegerSafe();
+                result[i] = this->stack.back();
                 this->stack.pop_back();
             }
 
