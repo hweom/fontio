@@ -44,7 +44,7 @@ namespace fontio { namespace model { namespace otf
         {
             auto searchRange = static_cast<uint16_t>(this->tables.size());
             auto entrySelector = static_cast<uint16_t>(0);
-            while (searchRange * 2 <= this->tables.size())
+            while (static_cast<size_t>(searchRange * 2) <= this->tables.size())
             {
                 searchRange <<= 1;
                 entrySelector++;
@@ -105,7 +105,7 @@ namespace fontio { namespace model { namespace otf
                 out.seekp(tableEnd);
             }
 
-            if (globalCrcPos == 0)
+            if (static_cast<size_t>(globalCrcPos) == 0)
             {
                 throw std::runtime_error("No head table in OTF!");
             }

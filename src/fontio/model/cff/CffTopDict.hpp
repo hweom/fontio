@@ -78,6 +78,25 @@ namespace fontio { namespace model { namespace cff
         {
         }
 
+        CffTopDict(CffTopDict&& other)
+            : version(std::move(other.version))
+            , notice(std::move(other.notice))
+            , copyright(std::move(other.copyright))
+            , fullName(std::move(other.fullName))
+            , familyName(std::move(other.familyName))
+            , weight(std::move(other.weight))
+            , fontMatrix(std::move(other.fontMatrix))
+            , boundBox(std::move(other.boundBox))
+            , defaultWidthX(std::move(other.defaultWidthX))
+            , nominalWidthX(std::move(other.nominalWidthX))
+            , charstrings(std::move(other.charstrings))
+            , charset(std::move(other.charset))
+            , localSubroutines(std::move(other.localSubroutines))
+        {
+        }
+
+        CffTopDict(const CffTopDict& other) = delete;
+
     public:
 
         const std::string GetVersion() const

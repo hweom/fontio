@@ -38,6 +38,8 @@ namespace fontio { namespace model { namespace cff
         {
         }
 
+        Cff(const Cff& other) = delete;
+
     public:
 
         const CffHeader& GetHeader() const

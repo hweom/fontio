@@ -35,7 +35,7 @@ namespace fontio { namespace logic { namespace type2
             }
 
             auto unbiased = this->UnbiasIndex(index);
-            if ((unbiased < 0) || (unbiased >= this->subroutines->size()))
+            if ((unbiased < 0) || (unbiased >= static_cast<int>(this->subroutines->size())))
             {
                 throw std::runtime_error("Index out of range");
             }

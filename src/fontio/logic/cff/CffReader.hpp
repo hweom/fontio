@@ -20,14 +20,14 @@ namespace fontio { namespace logic { namespace cff
     {
     public:
 
-        Cff ReadCff(const std::string& path)
+        std::unique_ptr<Cff> ReadCff(const std::string& path)
         {
             std::ifstream stream(path, std::ios_base::binary);
 
             return this->ReadCff(stream);
         }
 
-        Cff ReadCff(std::istream& stream)
+        std::unique_ptr<Cff> ReadCff(std::istream& stream)
         {
             auto header = this->ReadHeader(stream);
 
@@ -48,7 +48,7 @@ namespace fontio { namespace logic { namespace cff
                 globalSubroutines = this->ReadCharstrings(stream, globalSubroutineIndex, CffCharstringFormat::Type2);
             }
 
-            return Cff(header, names, std::move(topDicts), strings, std::move(globalSubroutines));
+            return std::unique_ptr<Cff>(new Cff(header, names, std::move(topDicts), strings, std::move(globalSubroutines)));
         }
 
     private:
@@ -299,9 +299,10 @@ namespace fontio { namespace logic { namespace cff
                 while (gid < totalGlyphs)
                 {
                     auto sid = this->ReadBigEndian<uint16_t>(stream);
-                    auto rangeLen = (format == 1)
-                        ? this->ReadBigEndian<uint8_t>(stream)
-                        : this->ReadBigEndian<uint16_t>(stream);
+                    auto rangeLen = static_cast<size_t>(
+                        (format == 1)
+                            ? this->ReadBigEndian<uint8_t>(stream)
+                            : this->ReadBigEndian<uint16_t>(stream));
 
                     for (size_t i = 0; i <= rangeLen; i++)
                     {

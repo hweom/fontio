@@ -51,13 +51,13 @@ namespace fontio { namespace logic { namespace otf
             stream.seekg(start);
             stream.clear();
 
-            const auto& topDict = cff.GetTopDicts()[fontIndex];
+            const auto& topDict = cff->GetTopDicts()[fontIndex];
 
-            auto glyphMetrics =this->CalculateGlyphMetrics(cff, topDict);
+            auto glyphMetrics =this->CalculateGlyphMetrics(*cff, topDict);
 
             std::vector<std::unique_ptr<IOtfTable>> tables;
 
-            auto cmapTablePtr = this->ConvertCmapTable(cff, topDict);
+            auto cmapTablePtr = this->ConvertCmapTable(*cff, topDict);
             const auto& cmapTable = *cmapTablePtr;
 
             tables.push_back(std::move(cmapTablePtr));
