@@ -123,13 +123,14 @@ namespace fontio { namespace logic { namespace otf
         std::unique_ptr<OtfNameTable> ConvertNameTable(const CffTopDict& topDict)
         {
             return std::unique_ptr<OtfNameTable>(new OtfNameTable(
-            {
-                { OtfNameId::Copyright, this->ToWString(topDict.GetCopyright()) },
-                { OtfNameId::FontFamily, this->ToWString(topDict.GetFamilyName()) },
-                { OtfNameId::UniqueFontId, this->ToWString(topDict.GetFullName()) },
-                { OtfNameId::FullFontName, this->ToWString(topDict.GetFullName()) },
-                { OtfNameId::VersionString, this->ToWString(topDict.GetVersion()) }
-            }));
+                std::map<OtfNameId, std::wstring>(
+                {
+                    { OtfNameId::Copyright, this->ToWString(topDict.GetCopyright()) },
+                    { OtfNameId::FontFamily, this->ToWString(topDict.GetFamilyName()) },
+                    { OtfNameId::UniqueFontId, this->ToWString(topDict.GetFullName()) },
+                    { OtfNameId::FullFontName, this->ToWString(topDict.GetFullName()) },
+                    { OtfNameId::VersionString, this->ToWString(topDict.GetVersion()) }
+                })));
         }
 
         std::unique_ptr<OtfHheaTable> ConvertHheaTable(const CffTopDict& topDict, const std::vector<GlyphMetrics>& glyphMetrics)

@@ -82,9 +82,9 @@ namespace fontio { namespace logic { namespace type2
         void UpdateBoundBoxByBezierValue(const Point2I& p0, const Point2I& p1, const Point2I& p2, const Point2I& p3)
         {
             auto roots = this->GetRootsOfSquareEquation(
-                -this->At<idx>(p0) + 3 * this->At<idx>(p1) - 3 * this->At<idx>(p2) + this->At<idx>(p3),
-                2 * (this->At<idx>(p0) - 2 * this->At<idx>(p1) + this->At<idx>(p2)),
-                this->At<idx>(p1) - this->At<idx>(p0));
+                static_cast<float>(-this->At<idx>(p0) + 3 * this->At<idx>(p1) - 3 * this->At<idx>(p2) + this->At<idx>(p3)),
+                static_cast<float>(2 * (this->At<idx>(p0) -2 * this->At<idx>(p1) +this->At<idx>(p2))),
+                static_cast<float>(this->At<idx>(p1) -this->At<idx>(p0)));
 
             for (auto t : roots)
             {
@@ -104,7 +104,7 @@ namespace fontio { namespace logic { namespace type2
         {
             assert ((t >= 0.0f) && (t <= 1.0f));
 
-            auto rt = 1.0 - t;
+            auto rt = 1.0f - t;
 
             return
                 rt * rt * rt * this->At<idx>(p0) +
