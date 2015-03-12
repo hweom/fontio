@@ -81,4 +81,21 @@ namespace fontio { namespace logic { namespace type2
         ASSERT_EQ(12, metrics.GetLeftSideBearings());
     }
 
+    TEST_F(Type2GlyphMetricsCalculatorTests, CanCalculateSpaceWidth)
+    {
+        auto cff = this->ReadCffFile("test_data/cff/test_font_width.cff");
+
+        const auto& topDict = cff->GetTopDicts()[0];
+        const auto& charstrings = static_cast<const CffType2Charstrings&>(topDict.GetCharstrings()).GetCharstrings();
+
+        auto metrics = this->calculator.CalculateMetrics(
+            charstrings[0],
+            Type2SubroutineAccessor(),
+            Type2SubroutineAccessor(),
+            topDict.GetNominalWidthX(),
+            topDict.GetDefaultWidthX());
+
+        ASSERT_EQ(227, metrics.GetAdvanceWidth());
+    }
+
 } } }
