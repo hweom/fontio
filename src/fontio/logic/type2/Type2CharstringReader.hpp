@@ -256,8 +256,8 @@ namespace fontio { namespace logic { namespace type2
         {
             return
                 (byte < 12) ||
-                (byte > 12) && (byte < 28) ||
-                (byte > 28) && (byte < 32);
+                ((byte > 12) && (byte < 28)) ||
+                ((byte > 28) && (byte < 32));
         }
 
         bool IsAtEnd() const

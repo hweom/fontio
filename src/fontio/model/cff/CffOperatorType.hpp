@@ -166,7 +166,7 @@ namespace fontio { namespace model { namespace cff
         case CffOperatorType::Private:
             return out << "Private";
         default:
-            return out << "<???>";
+            return out << "<?>";
         }
     }
 } } }

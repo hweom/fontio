@@ -335,7 +335,6 @@ namespace fontio { namespace logic { namespace otf
 
             Type2GlyphMetricsCalculator calculator;
 
-            size_t idx = 0;
             for (const auto& charstring : charstrings)
             {
                 auto metrics = calculator.CalculateMetrics(
@@ -346,8 +345,6 @@ namespace fontio { namespace logic { namespace otf
                     topDict.GetDefaultWidthX());
 
                 result.push_back(metrics);
-
-                idx++;
             }
 
             return result;

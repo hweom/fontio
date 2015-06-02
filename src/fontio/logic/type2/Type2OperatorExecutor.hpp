@@ -31,6 +31,7 @@
 #pragma once
 
 #include <deque>
+#include <iostream>
 #include <sstream>
 #include <vector>
 #include <unordered_set>
@@ -92,6 +93,8 @@ namespace fontio { namespace logic { namespace type2
             try
             {
                 this->ExecuteCharstring(context, charstring);
+
+                std::cout << this->debugStream.str() << std::endl;
             }
             catch(std::runtime_error& ex)
             {

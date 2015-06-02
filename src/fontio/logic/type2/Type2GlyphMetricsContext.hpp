@@ -116,14 +116,16 @@ namespace fontio { namespace logic { namespace type2
                 static_cast<float>(2 * (this->At<idx>(p0) -2 * this->At<idx>(p1) +this->At<idx>(p2))),
                 static_cast<float>(this->At<idx>(p1) -this->At<idx>(p0)));
 
-            for (auto t : roots)
+            if ((roots.first == roots.first) && (roots.first >= 0.0f) && (roots.first <= 1.0f))
             {
-                if ((t < 0.0f) || (t > 1.0f))
-                {
-                    continue;
-                }
+                auto x = static_cast<int>(this->GetBezierValue<idx>(p0, p1, p2, p3, roots.first));
 
-                auto x = static_cast<int>(this->GetBezierValue<idx>(p0, p1, p2, p3, t));
+                this->UpdateBoundBoxByValue<idx>(x);
+            }
+
+            if ((roots.second == roots.second) && (roots.second >= 0.0f) && (roots.second <= 1.0f))
+            {
+                auto x = static_cast<int>(this->GetBezierValue<idx>(p0, p1, p2, p3, roots.second));
 
                 this->UpdateBoundBoxByValue<idx>(x);
             }
@@ -155,16 +157,16 @@ namespace fontio { namespace logic { namespace type2
             static_assert(idx != idx, "No such coordinate");
         }
 
-        std::vector<float> GetRootsOfSquareEquation(float a, float b, float c)
+        std::pair<float, float> GetRootsOfSquareEquation(float a, float b, float c)
         {
             if (fabs(a) < 0.00001f)
             {
                 if (fabs(b) < 0.00001f)
                 {
-                    return {};
+                    return std::make_pair(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
                 }
 
-                return { static_cast<float>(-c / b) };
+                return std::make_pair(-c / b, std::numeric_limits<float>::quiet_NaN());
             }
 
             auto d = b * b - 4 * a * c;
@@ -173,15 +175,15 @@ namespace fontio { namespace logic { namespace type2
             {
                 auto rootD = sqrt(d);
 
-                return { static_cast<float>((-b + rootD) / (2 * a)), static_cast<float>((-b - rootD) / (2 * a)) };
+                return std::make_pair((-b + rootD) / (2 * a), (-b - rootD) / (2 * a));
             }
             else if (d < 0.0f)
             {
-                return {};
+                return std::make_pair(std::numeric_limits<float>::quiet_NaN(), std::numeric_limits<float>::quiet_NaN());
             }
             else
             {
-                return { static_cast<float>(-b / (2 * a)) };
+                return std::make_pair(-b / (2 * a), std::numeric_limits<float>::quiet_NaN());
             }
         }
 

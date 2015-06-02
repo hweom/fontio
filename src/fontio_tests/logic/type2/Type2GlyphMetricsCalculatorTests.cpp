@@ -89,7 +89,7 @@ namespace fontio { namespace logic { namespace type2
         const auto& charstrings = static_cast<const CffType2Charstrings&>(topDict.GetCharstrings()).GetCharstrings();
 
         auto metrics = this->calculator.CalculateMetrics(
-            charstrings[0],
+            charstrings[1],
             Type2SubroutineAccessor(),
             Type2SubroutineAccessor(),
             topDict.GetNominalWidthX(),

@@ -188,7 +188,7 @@ namespace fontio { namespace model { namespace type2
         case Type2ObjectType::Flex1:
             return out << "Flex1";
         default:
-            return out << "<???>";
+            return out << "<?>";
         }
     }
 } } }
