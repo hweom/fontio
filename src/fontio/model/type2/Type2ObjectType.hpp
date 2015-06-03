@@ -63,6 +63,7 @@ namespace fontio { namespace model { namespace type2
         CallGSubr = 0x001d,
         VHCurveTo = 0x001e,
         HVCurveTo = 0x001f,
+        DotSection = 0x0c00,
         And = 0x0c03,
         Or = 0x0c04,
         Not = 0x0c05,

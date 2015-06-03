@@ -419,6 +419,7 @@ namespace fontio { namespace logic { namespace type2
                 break;
 
             case Type2ObjectType::Blend:
+            case Type2ObjectType::DotSection:
                 break;
 
             default:

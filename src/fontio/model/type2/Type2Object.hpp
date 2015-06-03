@@ -224,7 +224,8 @@ namespace fontio { namespace model { namespace type2
                 { Type2ObjectType::Or, -1 },
                 { Type2ObjectType::Not, 0 },
                 { Type2ObjectType::Eq, -1 },
-                { Type2ObjectType::IfElse, -3 }
+                { Type2ObjectType::IfElse, -3 },
+                { Type2ObjectType::DotSection, 0 }
             };
 
             return ops;
