@@ -321,7 +321,10 @@ namespace fontio { namespace logic { namespace cff
 
             if (format == 0)
             {
-                throw std::logic_error("Not implemented");
+                for (size_t i = 1; i < totalGlyphs; i++)
+                {
+                    gidToSid[i] = this->ReadBigEndian<uint16_t>(stream);
+                }
             }
             else if ((format == 1) || (format == 2))
             {
