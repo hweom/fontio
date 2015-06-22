@@ -32,6 +32,7 @@
 
 #include <cinttypes>
 #include <stdexcept>
+#include <vector>
 
 #include <fontio/infrastructure/ByteIo.hpp>
 #include <fontio/model/otf/IOtfTable.hpp>
@@ -44,8 +45,6 @@ namespace fontio { namespace model { namespace otf
     class OtfPostTable : public IOtfTable
     {
     private:
-
-        OtfPostTableVersion version;
 
         float italicAngle;
 
@@ -63,10 +62,11 @@ namespace fontio { namespace model { namespace otf
 
         uint32_t maxMemType1;
 
+        std::vector<std::string> glyphNames;
+
     public:
 
         OtfPostTable(
-            OtfPostTableVersion version,
             float italicAngle,
             uint16_t underlinePosition,
             uint16_t underlineThickness,
@@ -74,9 +74,9 @@ namespace fontio { namespace model { namespace otf
             uint32_t minMemType42,
             uint32_t maxMemType42,
             uint32_t minMemType1,
-            uint32_t maxMemType1)
-            : version(version)
-            , italicAngle(italicAngle)
+            uint32_t maxMemType1,
+            std::vector<std::string>&& glyphNames)
+            : italicAngle(italicAngle)
             , underlinePosition(underlinePosition)
             , underlineThickness(underlineThickness)
             , isFixedPitch(isFixedPitch)
@@ -84,10 +84,16 @@ namespace fontio { namespace model { namespace otf
             , maxMemType42(maxMemType42)
             , minMemType1(minMemType1)
             , maxMemType1(maxMemType1)
+            , glyphNames(std::move(glyphNames))
         {
         }
 
     public:
+
+        const std::vector<std::string>& GetGlyphNames() const
+        {
+            return this->glyphNames;
+        }
 
         virtual OtfTableType GetType() const override
         {
@@ -96,7 +102,7 @@ namespace fontio { namespace model { namespace otf
 
         virtual void Save(std::ostream& out, OtfTableCrc& crc) const override
         {
-            WriteBytes<BigEndian>(out, static_cast<uint32_t>(this->version), crc);
+            WriteBytes<BigEndian>(out, static_cast<uint32_t>(0x00020000), crc);
             WriteBytes<BigEndian>(out, static_cast<int32_t>(this->italicAngle * 65536), crc);
             WriteBytes<BigEndian>(out, this->underlinePosition, crc);
             WriteBytes<BigEndian>(out, this->underlineThickness, crc);
@@ -105,6 +111,23 @@ namespace fontio { namespace model { namespace otf
             WriteBytes<BigEndian>(out, this->maxMemType42, crc);
             WriteBytes<BigEndian>(out, this->minMemType1, crc);
             WriteBytes<BigEndian>(out, this->maxMemType1, crc);
+
+            WriteBytes<BigEndian>(out, static_cast<uint16_t>(this->glyphNames.size()), crc);
+            for (size_t i = 0; i < this->glyphNames.size(); i++)
+            {
+                WriteBytes<BigEndian>(out, static_cast<uint16_t>(i + 258), crc);
+            }
+
+            for (size_t i = 0; i < this->glyphNames.size(); i++)
+            {
+                const auto& name = this->glyphNames[i];
+                WriteBytes<BigEndian>(out, static_cast<uint8_t>(name.length()), crc);
+
+                for (size_t j = 0; j < name.length(); j++)
+                {
+                    WriteBytes<BigEndian>(out, static_cast<uint8_t>(name[j]), crc);
+                }
+            }
         }
 
         virtual uint32_t GetId() const override

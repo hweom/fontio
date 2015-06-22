@@ -61,7 +61,10 @@ namespace fontio { namespace model { namespace cff
 
             index -= stdStrings.size();
 
-            assert (index < this->names.size());
+            if (index >= this->names.size())
+            {
+                throw std::runtime_error("Index out of range");
+            }
 
             return this->names[index];
         }

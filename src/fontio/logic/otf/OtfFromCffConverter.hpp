@@ -82,6 +82,7 @@ namespace fontio { namespace logic { namespace otf
             stream.clear();
 
             const auto& topDict = cff->GetTopDicts()[fontIndex];
+            const auto& strings = cff->GetStringIndex();
 
             auto glyphMetrics =this->CalculateGlyphMetrics(*cff, topDict);
 
@@ -97,7 +98,7 @@ namespace fontio { namespace logic { namespace otf
             tables.push_back(this->ConvertMaxpTable(topDict));
             tables.push_back(this->ConvertNameTable(topDict));
             tables.push_back(this->ConvertOs2Table(topDict, glyphMetrics, cmapTable));
-            tables.push_back(this->ConvertPostTable(topDict));
+            tables.push_back(this->ConvertPostTable(topDict, strings));
             tables.push_back(std::unique_ptr<IOtfTable>(new OtfCffTable(stream)));
 
             return std::unique_ptr<Otf>(new Otf(std::move(tables)));
@@ -292,12 +293,28 @@ namespace fontio { namespace logic { namespace otf
             ));
         }
 
-        std::unique_ptr<OtfPostTable> ConvertPostTable(const CffTopDict& topDict)
+        std::unique_ptr<OtfPostTable> ConvertPostTable(const CffTopDict& topDict, const CffStringIndex& strings)
         {
             int heightUnit = static_cast<int>(1.0 / topDict.GetFontMatrix().GetScale());
 
+            const auto& gidToSidMap = topDict.GetCharset().GetGidToSidMap();
+
+            std::vector<std::string> glyphNames;
+            for (size_t i = 0; i < topDict.GetCharstrings().GetCount(); i++)
+            {
+                auto gid = i + 1;
+                auto name = std::string(".notdef");
+
+                auto pos = gidToSidMap.find(gid);
+                if (pos != gidToSidMap.end())
+                {
+                    name = strings.GetString(pos->second);
+                }
+
+                glyphNames.push_back(name);
+            }
+
             return std::unique_ptr<OtfPostTable>(new OtfPostTable(
-                OtfPostTableVersion::Version_3_0,
                 0.0f,
                 static_cast<int16_t>(-heightUnit * 0.125),
                 static_cast<int16_t>(heightUnit * 0.05),
@@ -305,7 +322,8 @@ namespace fontio { namespace logic { namespace otf
                 0,
                 0,
                 0,
-                0));
+                0,
+                std::move(glyphNames)));
         }
 
         std::vector<GlyphMetrics> CalculateGlyphMetrics(const Cff& cff, const CffTopDict& topDict)

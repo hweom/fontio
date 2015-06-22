@@ -57,6 +57,32 @@ namespace fontio { namespace model { namespace otf
 
     public:
 
+        bool HasTable(OtfTableType type) const
+        {
+            for (const auto& t : this->tables)
+            {
+                if (t->GetType() == type)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        const IOtfTable& GetTable(OtfTableType type) const
+        {
+            for (const auto& t : this->tables)
+            {
+                if (t->GetType() == type)
+                {
+                    return *t;
+                }
+            }
+
+            throw std::logic_error("No such table");
+        }
+
         void Save(std::ostream& out) const
         {
             OtfTableCrc globalCrc;
