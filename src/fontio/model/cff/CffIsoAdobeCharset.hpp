@@ -30,7 +30,6 @@
 
 #pragma once
 
-#include <fontio/model/AdobeGlyphList.hpp>
 #include <fontio/model/cff/ICffCharset.hpp>
 #include <fontio/model/cff/CffStandardStrings.hpp>
 

@@ -34,7 +34,7 @@
 
 #include <fontio/logic/cff/CffReader.hpp>
 #include <fontio/logic/type2/Type2GlyphMetricsCalculator.hpp>
-#include <fontio/model/AdobeGlyphList.hpp>
+#include <fontio/model/AdobeStandardEncoding.hpp>
 #include <fontio/model/cff/Cff.hpp>
 #include <fontio/model/cff/CffType2Charstrings.hpp>
 #include <fontio/model/otf/Otf.hpp>
@@ -108,7 +108,7 @@ namespace fontio { namespace logic { namespace otf
 
         std::unique_ptr<OtfCmapTable> ConvertCmapTable(const Cff& cff, const CffTopDict& topDict)
         {
-            AdobeGlyphList glyphList;
+            AdobeStandardEncoding glyphList;
             const auto& strings = cff.GetStringIndex();
 
             std::vector<std::pair<uint16_t, uint16_t>> cmap;

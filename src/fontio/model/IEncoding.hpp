@@ -30,42 +30,19 @@
 
 #pragma once
 
-#include <fontio/model/cff/CffIndex.hpp>
-#include <fontio/model/cff/CffStandardStrings.hpp>
+#include <cinttypes>
+#include <string>
 
-namespace fontio { namespace model { namespace cff
+namespace fontio { namespace model
 {
-    class CffStringIndex
+    class IEncoding
     {
-    private:
-
-        std::vector<std::string> names;
-
     public:
 
-        CffStringIndex(const std::vector<std::string>& names)
-            : names(names)
+        virtual ~IEncoding()
         {
         }
 
-    public:
-
-        const std::string& GetString(size_t index) const
-        {
-            const auto& stdStrings = CffStandardStrings::Get();
-            if (index < stdStrings.size())
-            {
-                return stdStrings[index];
-            }
-
-            index -= stdStrings.size();
-
-            if (index >= this->names.size())
-            {
-                throw std::runtime_error("Index out of range");
-            }
-
-            return this->names[index];
-        }
+        virtual uint16_t GetUnicode(const std::string& name) const = 0;
     };
-} } }
+} }

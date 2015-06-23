@@ -30,42 +30,25 @@
 
 #pragma once
 
-#include <fontio/model/cff/CffIndex.hpp>
-#include <fontio/model/cff/CffStandardStrings.hpp>
+#include <unordered_map>
 
-namespace fontio { namespace model { namespace cff
+#include <fontio/model/IEncoding.hpp>
+
+namespace fontio { namespace model
 {
-    class CffStringIndex
+    class MacRomanEncoding : public IEncoding
     {
     private:
 
-        std::vector<std::string> names;
+        static std::unordered_map<std::string, uint16_t> glyphs;
 
     public:
 
-        CffStringIndex(const std::vector<std::string>& names)
-            : names(names)
+        virtual uint16_t GetUnicode(const std::string& name) const override
         {
-        }
+            auto pos = glyphs.find(name);
 
-    public:
-
-        const std::string& GetString(size_t index) const
-        {
-            const auto& stdStrings = CffStandardStrings::Get();
-            if (index < stdStrings.size())
-            {
-                return stdStrings[index];
-            }
-
-            index -= stdStrings.size();
-
-            if (index >= this->names.size())
-            {
-                throw std::runtime_error("Index out of range");
-            }
-
-            return this->names[index];
+            return (pos == glyphs.end()) ? 0 : pos->second;
         }
     };
-} } }
+} }
