@@ -32,6 +32,7 @@
 
 #include <cinttypes>
 #include <string>
+#include <unordered_map>
 
 namespace fontio { namespace model
 {
@@ -43,6 +44,10 @@ namespace fontio { namespace model
         {
         }
 
-        virtual uint16_t GetUnicode(const std::string& name) const = 0;
+        /// Get code for glyph name.
+        virtual uint16_t GetCode(const std::string& name) const = 0;
+
+        /// Get glyph name table.
+        virtual const std::unordered_map<std::string, uint16_t>& GetTable() const = 0;
     };
 } }

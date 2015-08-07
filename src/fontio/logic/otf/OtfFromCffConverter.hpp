@@ -115,7 +115,7 @@ namespace fontio { namespace logic { namespace otf
             for (const auto& pair : topDict.GetCharset().GetGidToSidMap())
             {
                 auto charName = strings.GetString(pair.second);
-                auto unicode = glyphList.GetUnicode(charName);
+                auto unicode = glyphList.GetCode(charName);
 
                 if (unicode > 0)
                 {

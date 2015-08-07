@@ -36,7 +36,7 @@
 
 namespace fontio { namespace model
 {
-    class MacRomanEncoding : public IEncoding
+    class UtfEncoding : public IEncoding
     {
     private:
 

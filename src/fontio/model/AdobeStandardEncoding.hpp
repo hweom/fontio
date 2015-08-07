@@ -44,11 +44,17 @@ namespace fontio { namespace model
 
     public:
 
-        virtual uint16_t GetUnicode(const std::string& name) const override
+        virtual uint16_t GetCode(const std::string& name) const override
         {
             auto pos = glyphs.find(name);
 
             return (pos == glyphs.end()) ? 0 : pos->second;
+        }
+
+        /// Get glyph name table.
+        virtual const std::unordered_map<std::string, uint16_t>& GetTable() const override
+        {
+            return this->glyphs;
         }
     };
 } }
