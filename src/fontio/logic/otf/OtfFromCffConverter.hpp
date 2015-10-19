@@ -233,7 +233,7 @@ namespace fontio { namespace logic { namespace otf
 
             for (const auto& pair : cmapTable.GetCmap())
             {
-                if (pair.second == 0)
+                if ((pair.second == 0) || (pair.first >= glyphMetrics.size()))
                 {
                     continue;
                 }

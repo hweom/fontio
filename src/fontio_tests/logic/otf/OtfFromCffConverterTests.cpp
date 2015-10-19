@@ -84,4 +84,13 @@ namespace fontio { namespace logic { namespace otf
 
         cff->Save(stream);
     }
+
+    TEST_F(OtfFromCffConverterTests, CanConvertCffWithAdobeCharset)
+    {
+        auto otf = this->ConvertFile("test_data/cff/iso_adobe_charset.cff");
+
+        std::ofstream stream("iso_adobe_charset.otf", std::ios_base::binary);
+
+        otf->Save(stream);
+    }
 } } }
