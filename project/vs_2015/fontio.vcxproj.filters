@@ -1,0 +1,234 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="infrastructure">
+      <UniqueIdentifier>{e4a90618-8f55-4ff6-acf9-74b4a85b7c87}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="logic">
+      <UniqueIdentifier>{fbf42696-fd8a-47e0-a590-ca91d9185a61}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model">
+      <UniqueIdentifier>{12a0f28a-40a1-4d34-a316-7711d989095e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="logic\cff">
+      <UniqueIdentifier>{028b99cf-d636-4ed4-a007-dc0c0da1bf9e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="logic\otf">
+      <UniqueIdentifier>{ab770cab-2724-4529-a7db-0bbe54002355}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="logic\type2">
+      <UniqueIdentifier>{b634371b-f06c-4dad-912c-ddb2283c48cc}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\cff">
+      <UniqueIdentifier>{eb074778-e574-4e09-adba-f0d598e7efcb}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\otf">
+      <UniqueIdentifier>{f9dc1b0d-d55e-425d-8349-567c8882601e}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="model\type2">
+      <UniqueIdentifier>{fb6f770f-3b26-4114-87ff-067ad9f4c697}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\src\fontio\infrastructure\ByteIo.hpp">
+      <Filter>infrastructure</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\cff\CffReader.hpp">
+      <Filter>logic\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\otf\OtfFromCffConverter.hpp">
+      <Filter>logic\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\type2\IType2Context.hpp">
+      <Filter>logic\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\type2\Type2CharstringReader.hpp">
+      <Filter>logic\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\type2\Type2CharstringReaderState.hpp">
+      <Filter>logic\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\type2\Type2GlyphMetricsCalculator.hpp">
+      <Filter>logic\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\type2\Type2GlyphMetricsContext.hpp">
+      <Filter>logic\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\type2\Type2OperatorExecutor.hpp">
+      <Filter>logic\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\logic\type2\Type2SubroutineAccessor.hpp">
+      <Filter>logic\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\Cff.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffCharsetType.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffCharstringFormat.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffCustomCharset.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffDict.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffFontMatrix.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffHeader.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffIndex.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffIsoAdobeCharset.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffNameIndex.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffObject.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffOperatorType.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffPrivateDict.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffStandardStrings.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffStringIndex.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffTopDict.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\CffType2Charstrings.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\ICffCharset.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\cff\ICffCharstrings.hpp">
+      <Filter>model\cff</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\type2\Type2Charstring.hpp">
+      <Filter>model\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\type2\Type2Object.hpp">
+      <Filter>model\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\type2\Type2ObjectType.hpp">
+      <Filter>model\type2</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\IOtfTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\Otf.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfCffTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfCmapTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfFixed.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfHeadTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfHheaTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfHmtxTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfMaxpTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfMaxpTableVersion.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfNameId.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfNameTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfOs2Table.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfPostTable.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfPostTableVersion.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfTableCrc.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfTableType.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\otf\OtfUnicodeRanges.hpp">
+      <Filter>model\otf</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\AdobeGlyphList.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\AdobeStandardEncoding.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\BoundBox.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\GlyphMetrics.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\IEncoding.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\MacRomanEncoding.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\PdfDocEncoding.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\Point2.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\UtfEncoding.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\src\fontio\model\WinAnsiEncoding.hpp">
+      <Filter>model</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\src\fontio\model\AdobeGlyphList.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fontio\model\AdobeStandardEncoding.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fontio\model\MacRomanEncoding.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fontio\model\PdfDocEncoding.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fontio\model\UtfEncoding.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\src\fontio\model\WinAnsiEncoding.cpp">
+      <Filter>model</Filter>
+    </ClCompile>
+  </ItemGroup>
+</Project>
