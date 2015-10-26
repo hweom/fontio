@@ -7,20 +7,20 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "fontio", "fontio.vcxproj", 
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
-		Debug static|x64 = Debug static|x64
-		Debug static|x86 = Debug static|x86
-		Release static|x64 = Release static|x64
-		Release static|x86 = Release static|x86
+		Debug|x64 = Debug|x64
+		Debug|x86 = Debug|x86
+		Release|x64 = Release|x64
+		Release|x86 = Release|x86
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{D05D71BF-9824-4108-940C-836572843C06}.Debug static|x64.ActiveCfg = Debug static|x64
-		{D05D71BF-9824-4108-940C-836572843C06}.Debug static|x64.Build.0 = Debug static|x64
-		{D05D71BF-9824-4108-940C-836572843C06}.Debug static|x86.ActiveCfg = Debug static|Win32
-		{D05D71BF-9824-4108-940C-836572843C06}.Debug static|x86.Build.0 = Debug static|Win32
-		{D05D71BF-9824-4108-940C-836572843C06}.Release static|x64.ActiveCfg = Release static|x64
-		{D05D71BF-9824-4108-940C-836572843C06}.Release static|x64.Build.0 = Release static|x64
-		{D05D71BF-9824-4108-940C-836572843C06}.Release static|x86.ActiveCfg = Release static|Win32
-		{D05D71BF-9824-4108-940C-836572843C06}.Release static|x86.Build.0 = Release static|Win32
+		{D05D71BF-9824-4108-940C-836572843C06}.Debug|x64.ActiveCfg = Debug|x64
+		{D05D71BF-9824-4108-940C-836572843C06}.Debug|x64.Build.0 = Debug|x64
+		{D05D71BF-9824-4108-940C-836572843C06}.Debug|x86.ActiveCfg = Debug|Win32
+		{D05D71BF-9824-4108-940C-836572843C06}.Debug|x86.Build.0 = Debug|Win32
+		{D05D71BF-9824-4108-940C-836572843C06}.Release|x64.ActiveCfg = Release|x64
+		{D05D71BF-9824-4108-940C-836572843C06}.Release|x64.Build.0 = Release|x64
+		{D05D71BF-9824-4108-940C-836572843C06}.Release|x86.ActiveCfg = Release|Win32
+		{D05D71BF-9824-4108-940C-836572843C06}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
