@@ -197,12 +197,13 @@ namespace fontio { namespace logic { namespace otf
                 1,
                 0,
                 0,
-                glyphMetrics.size()));
+                static_cast<uint16_t>(glyphMetrics.size())));
         }
 
         std::unique_ptr<OtfMaxpTable> ConvertMaxpTable(const CffTopDict& topDict)
         {
-            return std::unique_ptr<OtfMaxpTable>(new OtfMaxpTable(topDict.GetCharstrings().GetCount()));
+            return std::unique_ptr<OtfMaxpTable>(new OtfMaxpTable(
+                static_cast<uint16_t>(topDict.GetCharstrings().GetCount())));
         }
 
         std::unique_ptr<OtfOs2Table> ConvertOs2Table(
@@ -300,7 +301,7 @@ namespace fontio { namespace logic { namespace otf
             const auto& gidToSidMap = topDict.GetCharset().GetGidToSidMap();
 
             std::vector<std::string> glyphNames;
-            for (size_t i = 0; i < topDict.GetCharstrings().GetCount(); i++)
+            for (uint16_t i = 0; i < topDict.GetCharstrings().GetCount(); i++)
             {
                 auto gid = i + 1;
                 auto name = std::string(".notdef");

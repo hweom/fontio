@@ -30,6 +30,7 @@
 
 #pragma once
 
+#include <cstdint>
 #include <map>
 #include <stdexcept>
 #include <vector>
@@ -200,7 +201,7 @@ namespace fontio { namespace model { namespace otf
             {
                 entry.header.offset = offset;
 
-                offset += entry.text.size() * entry.characterWidth;
+                offset += static_cast<uint16_t>(entry.text.size() * entry.characterWidth);
             }
         }
 
