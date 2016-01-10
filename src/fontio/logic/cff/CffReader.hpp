@@ -72,9 +72,11 @@ namespace fontio { namespace logic { namespace cff
             auto topDicts = this->ReadTopDicts(stream, topDictIndex, strings);
 
             std::unique_ptr<ICffCharstrings> globalSubroutines;
-            auto globalSubroutineIndex = this->ReadIndex(stream, stringIndex.GetOffsets().back());
-            if (!globalSubroutineIndex.IsEmpty())
-            {
+            auto globalSubroutineIndex = stringIndex.GetOffsets().empty()
+                ? CffIndex()
+                : this->ReadIndex(stream, stringIndex.GetOffsets().back());
+
+            if (!globalSubroutineIndex.IsEmpty()) {
                 globalSubroutines = this->ReadCharstrings(stream, globalSubroutineIndex, CffCharstringFormat::Type2);
             }
 
@@ -354,6 +356,10 @@ namespace fontio { namespace logic { namespace cff
         CffStringIndex ReadStringIndex(std::istream& stream, const CffIndex& index)
         {
             std::vector<std::string> strings;
+
+            if (index.GetOffsets().size() == 0) {
+                return CffStringIndex(strings);
+            }
 
             for (size_t i = 0; i < index.GetOffsets().size() - 1; i++)
             {
